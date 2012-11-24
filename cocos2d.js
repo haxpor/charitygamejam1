@@ -35,7 +35,8 @@
         SingleEngineFile:'',
         appFiles:[
             'src/resource.js',
-            'src/myApp.js'//add your own files in order here
+            'src/gameSessionScene.js',
+            'src/global.js'
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {
