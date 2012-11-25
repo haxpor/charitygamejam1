@@ -1,4 +1,5 @@
 var GameSessionLayer = cc.Layer.extend({
+    _mc:null,
 
     init:function () {
 
@@ -13,6 +14,11 @@ var GameSessionLayer = cc.Layer.extend({
         var layout = cc.Sprite.create(res_testLayout);
         layout.setPosition(cc.p(winSize.width/2, winSize.height/2));
         this.addChild(layout, -10);
+
+        // add test character
+        this._mc = MainCharacter.create();
+        this._mc.setPosition(cc.p(winSize.width * 0.8, winSize.height/2 - 32));
+        this.addChild(this._mc);
 
         this.setTouchEnabled(true);
         return true;

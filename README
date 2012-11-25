@@ -2,4 +2,8 @@ A charity game jam project for LD48 hosted by @McPunkypants.
 
 I don't decide on the game name just yet.
 
+-- Code Guideline --
+1. Prefix variables/functions with "_" to indicate that it's private members.
+2. Non-prefix variables/functions means public members.
+
 Wasin

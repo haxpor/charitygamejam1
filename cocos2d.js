@@ -36,7 +36,8 @@
         appFiles:[
             'src/resource.js',
             'src/gameSessionScene.js',
-            'src/global.js'
+            'src/global.js',
+            'src/mainCharacter.js'
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {
