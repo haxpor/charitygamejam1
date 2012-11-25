@@ -6,15 +6,24 @@ var MainCharacterStates = {
 	DIE_STATE: 3,
 }
 
+var MainCharacterWeapon = {
+	MINIGUN: 0,
+	SHOTGUN: 1
+}
+
 var MainCharacter = cc.Sprite.extend({
 	// animations + actions
 	_walkAnimAction:null,
 	_beingHitAnimAction:null,
 	_dieAnimAction:null,
 
+	// weapon
+	_weapon:null,
+
 	// attributes
 	hp:100,
 	currentState: -1,
+	currentWeapon: -1,
 
 	initWithFile:function(filename, rect) {
 		// call super's init() function first
@@ -26,8 +35,9 @@ var MainCharacter = cc.Sprite.extend({
 		// init basic attributes
 		this.hp = 100;
 		this.currentState = MainCharacterStates.WALK_STATE;
+		this.currentWeapon = MainCharacterWeapon.MINIGUN;
 
-		// create animations
+		// ## ANIMATION ##
 		// walk
 		var frames = new Array();
 
@@ -58,6 +68,10 @@ var MainCharacter = cc.Sprite.extend({
 			frames.push(cc.SpriteFrame.create(res_mainCharacter, cc.rect(i*32, 32*3, 32, 32)));
 		animate = cc.Animate.create(cc.Animation.create(frames, 1/8.0));
 		this._dieAnimAction = cc.Repeat.create(animate, 1);
+
+		// ## WEAPON ##
+		this._weapon = cc.Sprite.create(res_minigun);
+		this._weapon.setAnchorPoint(cc.p(1.0, 0.5));
 
 		// run default animation
 		this.playWalkAnimation();
@@ -91,6 +105,47 @@ var MainCharacter = cc.Sprite.extend({
 		this.currentState = MainCharacterStates.DIE_STATE;
 		this.stopAllActions();
 		this.runAction(this._dieAnimAction);
+	},
+
+	// override: also set the position of weapon
+	setPosition:function(pos) {
+		this._super(pos);
+		this._weapon.setPosition(cc.p(pos.x+16,pos.y+16));
+	},
+
+	addSelfToNode:function(node) {
+		node.addChild(this);
+		node.addChild(this._weapon);
+	},
+	changeWeaponTo:function(no) {
+		if(no == MainCharacterWeapon.MINIGUN)
+		{
+
+		}
+		else if(no == MainCharacterWeapon.SHOTGUN)
+		{
+
+		}
+	},
+	updateWeaponRotationFrom:function(aimPos) {
+		var vec = cc.p(aimPos.x - this._weapon.getPositionX(), aimPos.y - this._weapon.getPositionY());
+
+		// normalize
+		var l = 1.0 / Math.sqrt(vec.x * vec.x + vec.y * vec.y);
+		vec.x = vec.x * l;
+		vec.y = vec.y * l;
+
+		// dot
+		// dot between unit-up vector, and vec
+		var dot = vec.x * -1.0 + vec.y * 0.0;
+
+		// calculate rotation angle
+		var angle = Math.acos(dot) * 180 / Math.PI;
+		if(vec.y < 0.0)
+            angle *= -1.0;
+
+        // update rotation to weapon
+        this._weapon.setRotation(angle);
 	}
 });
 

@@ -7,6 +7,8 @@ var res_mainCharacter = "res/mainCharSpriteSheet.png";
 var res_testSfx = "res/testSfx";
 var res_testMusic = "res/bgMusic";
 
+var res_minigun = "res/minigun.png";
+
 var g_ressources = [
     //image
     {type:"image", src: s_HelloWorld},
@@ -14,6 +16,8 @@ var g_ressources = [
     {type:"image", src: s_CloseSelected},
     {type:"image", src: res_testLayout},
     {type:"image", src: res_mainCharacter},
+
+    {type:"image", src: res_minigun},
 
     //plist
 

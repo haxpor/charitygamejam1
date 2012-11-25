@@ -1,4 +1,5 @@
 var GameSessionLayer = cc.Layer.extend({
+    isMouseDown:false,
     _mc:null,
 
     init:function () {
@@ -18,17 +19,33 @@ var GameSessionLayer = cc.Layer.extend({
         // add test character
         this._mc = MainCharacter.create();
         this._mc.setPosition(cc.p(winSize.width * 0.8, winSize.height/2 - 32));
-        this.addChild(this._mc);
+        this._mc.addSelfToNode(this);
 
         this.setTouchEnabled(true);
         return true;
     },
 
-    onTouchBegan:function (touches, event) {
+    onTouchesBegan:function (touches, event) {
+        this.isMouseDown = true;
+
+        // shoot
+
+        // update the rotation of weapon
+        if(touches)
+            this._mc.updateWeaponRotationFrom(touches[0].getLocation());
     },
-    onTouchMoved:function (touch, event) {
+    onTouchesMoved:function (touches, event) {
+        if(this.isMouseDown)
+        {
+            // shoot
+        }
+
+        // update the rotation of weapon
+        if(touches)
+            this._mc.updateWeaponRotationFrom(touches[0].getLocation());
     },
-    onTouchesEnded:function (touch, event) {
+    onTouchesEnded:function (touches, event) {
+        this.isMouseDown = false;
     },
     onTouchesCancelled:function (touch, event) {
     }
