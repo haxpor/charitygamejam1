@@ -11,14 +11,22 @@ var MainCharacterWeapon = {
 	SHOTGUN: 1
 }
 
+var WeaponCoolDownTime = {
+	MINIGUN: 0.0, // no cool down time
+	SHOTGUN: 1.0
+}
+
 var MainCharacter = cc.Sprite.extend({
 	// animations + actions
 	_walkAnimAction:null,
 	_beingHitAnimAction:null,
 	_dieAnimAction:null,
 
-	// weapon
+	// internal
 	_weapon:null,
+	_aimVec:null,
+	_isWeaponFirstShotOut: false,
+	_countingWeaponShotCoolDownTime:0,
 
 	// attributes
 	hp:100,
@@ -36,6 +44,9 @@ var MainCharacter = cc.Sprite.extend({
 		this.hp = 100;
 		this.currentState = MainCharacterStates.WALK_STATE;
 		this.currentWeapon = MainCharacterWeapon.MINIGUN;
+
+		this._aimVec = cc.p(-1.0, 0.0);	// default of the weapon sprite
+		this._bulletSpawnPoint = cc.p(-1.0, -1.0); // dummy
 
 		// ## ANIMATION ##
 		// walk
@@ -70,11 +81,13 @@ var MainCharacter = cc.Sprite.extend({
 		this._dieAnimAction = cc.Repeat.create(animate, 1);
 
 		// ## WEAPON ##
-		this._weapon = cc.Sprite.create(res_minigun);
+		this._weapon = cc.Sprite.create(res_weapons, cc.rect(0, 0, 32, 32));
 		this._weapon.setAnchorPoint(cc.p(1.0, 0.5));
 
 		// run default animation
 		this.playWalkAnimation();
+		// schedule update
+		this.schedule(this.countTime, 1.0);
 
 		return true;
 	},
@@ -120,11 +133,13 @@ var MainCharacter = cc.Sprite.extend({
 	changeWeaponTo:function(no) {
 		if(no == MainCharacterWeapon.MINIGUN)
 		{
-
+			this.currentWeapon = MainCharacterWeapon.MINIGUN;
+			this._weapon.setTextureRect(cc.rect(0, 0, 32, 32));
 		}
 		else if(no == MainCharacterWeapon.SHOTGUN)
 		{
-
+			this.currentWeapon = MainCharacterWeapon.SHOTGUN;
+			this._weapon.setTextureRect(cc.rect(0, 32, 32, 32));
 		}
 	},
 	updateWeaponRotationFrom:function(aimPos) {
@@ -146,6 +161,98 @@ var MainCharacter = cc.Sprite.extend({
 
         // update rotation to weapon
         this._weapon.setRotation(angle);
+
+        // update aiming vector
+        this._aimVec = vec;
+	},
+	shoot:function(parent) {
+		global.log(this.currentWeapon);
+		if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
+		{
+			// calculate a spawn pos
+			var spawnPos = cc.p(this._weapon.getPositionX() + this._aimVec.x*20, this._weapon.getPositionY() + this._aimVec.y*5);
+			var destPos = cc.p(spawnPos.x + this._aimVec.x*512, spawnPos.y + this._aimVec.y*448);
+
+			// spawn a bullet
+			var bullet = cc.Sprite.create(res_minigunBullet);
+			bullet.setPosition(spawnPos);
+			// move the bullet in the direction of the aimming vec
+			var moveTo = cc.MoveTo.create(1.0, destPos);
+			var action = cc.Sequence.create(
+				moveTo,
+				cc.CallFunc.create(bullet, bullet.removeFromParentAndCleanup, true));
+			bullet.runAction(action);
+			parent.addChild(bullet);
+		}
+		else if(this.currentWeapon == MainCharacterWeapon.SHOTGUN)
+		{
+			if(this._countingWeaponShotCoolDownTime == 0) // only check for 0 is enough
+			{
+				this._isWeaponFirstShotOut = true;
+				// manually called countTime() first time
+				this.countTime(0.0000000000000001);
+
+				for(var i=1; i<=5; i++)
+				{
+					// calculate a spawn pos
+					var bullRandomSpawnDir = 1.0;
+					if(Math.random() > 0.5)
+						bullRandomSpawnDir = -1.0;
+
+					var spawnPos;
+					var destPos;
+
+					var absAimVec = cc.p(Math.abs(this._aimVec.x), Math.abs(this._aimVec.y));
+
+					if(absAimVec.x > 0.6)
+					{
+						spawnPos = cc.p(this._weapon.getPositionX() + this._aimVec.x*21, this._weapon.getPositionY() + this._aimVec.y*5 + Math.random()*bullRandomSpawnDir*2);
+						destPos = cc.p(spawnPos.x + this._aimVec.x*512, spawnPos.y + this._aimVec.y*448 + Math.random()*bullRandomSpawnDir*20);
+					}
+					else if(absAimVec.y > 0.6)
+					{
+						spawnPos = cc.p(this._weapon.getPositionX() + this._aimVec.x*21 + Math.random()*bullRandomSpawnDir*2, this._weapon.getPositionY() + this._aimVec.y*5);
+						destPos = cc.p(spawnPos.x + this._aimVec.x*512 + Math.random()*bullRandomSpawnDir*20, spawnPos.y + this._aimVec.y*448);
+					}
+
+					// spawn a bullet
+					var bullet = cc.Sprite.create(res_shotgunBullet);
+					bullet.setPosition(spawnPos);
+					// move the bullet in the direction of the aimming vec
+					var moveTo = cc.MoveTo.create(1.0, destPos);
+					var action = cc.Sequence.create(
+						moveTo,
+						cc.CallFunc.create(bullet, bullet.removeFromParentAndCleanup, true));
+					bullet.runAction(action);
+					parent.addChild(bullet);
+				}
+			}
+		}
+	},
+	countTime:function(dt) {
+		if(this._isWeaponFirstShotOut)
+		{
+			this._countingWeaponShotCoolDownTime += dt;
+			global.log(this._countingWeaponShotCoolDownTime);
+
+			// according to the weapon currently selected
+			/*if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
+			{
+				if(this._countingWeaponShotCoolDownTime > WeaponCoolDownTime.MINIGUN)
+				{
+					this._countingWeaponShotCoolDownTime = 0;
+					this._isWeaponFirstShotOut = false;
+				}
+			}*/
+			if(this.currentWeapon == MainCharacterWeapon.SHOTGUN)
+			{
+				if(this._countingWeaponShotCoolDownTime > WeaponCoolDownTime.SHOTGUN)
+				{
+					this._countingWeaponShotCoolDownTime = 0;
+					this._isWeaponFirstShotOut = false;
+				}
+			}
+		}
 	}
 });
 
