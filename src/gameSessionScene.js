@@ -1,6 +1,15 @@
 var GameSessionLayer = cc.LayerColor.extend({
     isMouseDown:false,
     _mc:null,
+    _ground1:null,
+    _ground2:null,
+    _sky:null,
+    _building1:null,
+    _building2:null,
+    _cloudFront1:null,
+    _cloudFront2:null,
+    _cloudBehind1:null,
+    _cloudBehind2:null,
 
     initWithColor:function (color) {
 
@@ -12,9 +21,101 @@ var GameSessionLayer = cc.LayerColor.extend({
 
         var winSize = cc.Director.getInstance().getWinSize();
 
-        var layout = cc.Sprite.create(res_testLayout);
-        layout.setPosition(cc.p(winSize.width/2, winSize.height/2));
-        this.addChild(layout, -10);
+        // background
+        this._sky = cc.Sprite.create(res_sky);
+        this._sky.setAnchorPoint(cc.p(0.0,1.0));
+        this._sky.setPosition(cc.p(0, winSize.height));
+        this.addChild(this._sky, -1);
+
+        this._ground1 = cc.Sprite.create(res_ground);
+        this._ground1.setAnchorPoint(cc.p(0.0,1.0));
+        this._ground1.setPosition(cc.p(0, winSize.height-64));
+        var sequence1 = cc.Sequence.create(
+            cc.MoveBy.create(0.02, cc.p(-5,0)),
+            cc.CallFunc.create(this, this.resetPositionGround, this._ground1));
+        var moveGround1 = cc.RepeatForever.create(sequence1);
+        this._ground1.runAction(moveGround1);
+        this.addChild(this._ground1, -1);
+
+        this._ground2 = cc.Sprite.create(res_ground);
+        this._ground2.setAnchorPoint(cc.p(0.0,1.0));
+        this._ground2.setPosition(cc.p(winSize.width, winSize.height-64));
+        var sequence2 = cc.Sequence.create(
+            cc.MoveBy.create(0.02, cc.p(-5,0)),
+            cc.CallFunc.create(this, this.resetPositionGround, this._ground2));
+        var moveGround2 = cc.RepeatForever.create(sequence2);
+        this._ground2.runAction(moveGround2);
+        this.addChild(this._ground2, -1);
+
+        // parallax objects (do it manually)
+        // - cloud behind
+        this._cloudBehind1 = cc.Sprite.create(res_cloudBehind);
+        this._cloudBehind1.setAnchorPoint(cc.p(0.0, 1.0));
+        this._cloudBehind1.setPosition(cc.p(0, winSize.height-6));
+        this._cloudBehind1.runAction(cc.RepeatForever.create(
+            cc.Sequence.create(
+                cc.MoveBy.create(0.4, cc.p(-4,0)),
+                cc.CallFunc.create(this, this.resetPositionCloudBehind, this._cloudBehind1)
+            ))
+        );
+        this.addChild(this._cloudBehind1, -1);
+
+        this._cloudBehind2 = cc.Sprite.create(res_cloudBehind);
+        this._cloudBehind2.setAnchorPoint(cc.p(0.0, 1.0));
+        this._cloudBehind2.setPosition(cc.p(478, winSize.height-6));
+        this._cloudBehind2.runAction(cc.RepeatForever.create(
+            cc.Sequence.create(
+                cc.MoveBy.create(0.4, cc.p(-4,0)),
+                cc.CallFunc.create(this, this.resetPositionCloudBehind, this._cloudBehind2)
+            ))
+        );
+        this.addChild(this._cloudBehind2, -1);
+
+        // - building
+        this._building1 = cc.Sprite.create(res_building);
+        this._building1.setAnchorPoint(cc.p(0.0, 1.0));
+        this._building1.setPosition(cc.p(0, winSize.height-16));
+        this._building1.runAction(cc.RepeatForever.create(
+            cc.Sequence.create(
+                cc.MoveBy.create(0.3, cc.p(-4,0)),
+                cc.CallFunc.create(this, this.resetPositionGround, this._building1)
+            ))
+        );
+        this.addChild(this._building1, -1);
+
+        this._building2 = cc.Sprite.create(res_building);
+        this._building2.setAnchorPoint(cc.p(0.0, 1.0));
+        this._building2.setPosition(cc.p(winSize.width, winSize.height-16));
+        this._building2.runAction(cc.RepeatForever.create(
+            cc.Sequence.create(
+                cc.MoveBy.create(0.3, cc.p(-4,0)),
+                cc.CallFunc.create(this, this.resetPositionGround, this._building2)
+            ))
+        );
+        this.addChild(this._building2, -1);
+
+        // - cloud front
+        this._cloudFront1 = cc.Sprite.create(res_cloudFront);
+        this._cloudFront1.setAnchorPoint(cc.p(0.0, 1.0));
+        this._cloudFront1.setPosition(cc.p(0, winSize.height-20));
+        this._cloudFront1.runAction(cc.RepeatForever.create(
+            cc.Sequence.create(
+                cc.MoveBy.create(0.45, cc.p(-5,0)),
+                cc.CallFunc.create(this, this.resetPositionCloudFront, this._cloudFront1)
+            ))
+        );
+        this.addChild(this._cloudFront1, -1);
+
+        this._cloudFront2 = cc.Sprite.create(res_cloudFront);
+        this._cloudFront2.setAnchorPoint(cc.p(0.0, 1.0));
+        this._cloudFront2.setPosition(cc.p(336, winSize.height-20));
+        this._cloudFront2.runAction(cc.RepeatForever.create(
+            cc.Sequence.create(
+                cc.MoveBy.create(0.45, cc.p(-5,0)),
+                cc.CallFunc.create(this, this.resetPositionCloudFront, this._cloudFront2)
+            ))
+        );
+        this.addChild(this._cloudFront2, -1);
 
         // add test character
         this._mc = MainCharacter.create();
@@ -24,6 +125,18 @@ var GameSessionLayer = cc.LayerColor.extend({
         this.setTouchEnabled(true);
         this.setKeyboardEnabled(true);
         return true;
+    },
+    resetPositionGround:function (node) {
+        if(node.getPositionX() + 512 < 0)
+            node.setPositionX(512);
+    },
+    resetPositionCloudBehind:function (node) {
+        if(node.getPositionX() + 478 < 0)
+            node.setPosition(478);
+    },
+    resetPositionCloudFront:function (node) {
+        if(node.getPositionX() + 336 < 0)
+            node.setPosition(336);
     },
 
     onTouchesBegan:function (touches, event) {
@@ -37,14 +150,15 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._mc.shoot(this);
     },
     onTouchesMoved:function (touches, event) {
-        if(this.isMouseDown)
-        {
-            // shoot
-        }
-
         // update the rotation of weapon
         if(touches)
             this._mc.updateWeaponRotationFrom(touches[0].getLocation());
+
+        if(this.isMouseDown)
+        {
+            // shoot
+            this._mc.shoot(this);
+        }
     },
     onTouchesEnded:function (touches, event) {
         this.isMouseDown = false;
@@ -56,6 +170,7 @@ var GameSessionLayer = cc.LayerColor.extend({
 
     },
     onKeyDown:function(e) {
+        // cycle through the available weapons
         if(e == cc.KEY.x)
         {
             // cycle through weapon

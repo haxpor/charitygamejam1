@@ -11,6 +11,12 @@ var res_weapons = "res/weapons.png";
 var res_minigunBullet = "res/minigunBullet.png";
 var res_shotgunBullet = "res/shotgunBullet.png";
 
+var res_sky = "res/sky.png";
+var res_ground = "res/sand.png";
+var res_building = "res/buildings.png";
+var res_cloudFront = "res/cloud_front.png";
+var res_cloudBehind = "res/cloud_behind.png";
+
 var g_ressources = [
     //image
     {type:"image", src: s_HelloWorld},
@@ -22,6 +28,12 @@ var g_ressources = [
     {type:"image", src: res_weapons},
     {type:"image", src: res_minigunBullet},
     {type:"image", src: res_shotgunBullet},
+
+    {type:"image", src: res_sky},
+    {type:"image", src: res_ground},
+    {type:"image", src: res_building},
+    {type:"image", src: res_cloudFront},
+    {type:"image", src: res_cloudBehind},
 
     //plist
 
