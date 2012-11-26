@@ -117,10 +117,16 @@ var GameSessionLayer = cc.LayerColor.extend({
         );
         this.addChild(this._cloudFront2, -1);
 
-        // add test character
+        // add character
         this._mc = MainCharacter.create();
         this._mc.setPosition(cc.p(winSize.width * 0.8, winSize.height/2 - 32));
         this._mc.addSelfToNode(this);
+
+        // add test zombie
+        var zombie = Zombie.create();
+        zombie.setPosition(cc.p(winSize.width/2, winSize.height/2));
+        zombie.playDieAnimation();
+        this.addChild(zombie);
 
         this.setTouchEnabled(true);
         this.setKeyboardEnabled(true);

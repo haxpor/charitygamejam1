@@ -1,6 +1,5 @@
 var MainCharacterStates = {
 	// states
-	FREEZE_STATE: 0,	// or idle
 	WALK_STATE: 1,
 	BEINGHIT_STATE: 2,
 	DIE_STATE: 3,

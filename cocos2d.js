@@ -37,7 +37,8 @@
             'src/resource.js',
             'src/gameSessionScene.js',
             'src/global.js',
-            'src/mainCharacter.js'
+            'src/mainCharacter.js',
+            'src/zombie.js',
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {
