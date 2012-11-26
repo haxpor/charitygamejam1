@@ -165,7 +165,6 @@ var MainCharacter = cc.Sprite.extend({
         this._aimVec = vec;
 	},
 	shoot:function(parent) {
-		global.log(this.currentWeapon);
 		if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
 		{
 			// calculate a spawn pos

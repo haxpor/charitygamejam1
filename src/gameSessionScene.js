@@ -32,7 +32,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._ground1.setPosition(cc.p(0, winSize.height-64));
         var sequence1 = cc.Sequence.create(
             cc.MoveBy.create(0.02, cc.p(-5,0)),
-            cc.CallFunc.create(this, this.resetPositionGround, this._ground1));
+            cc.CallFunc.create(this, this.resetPositionLoopableNode, this._ground1));
         var moveGround1 = cc.RepeatForever.create(sequence1);
         this._ground1.runAction(moveGround1);
         this.addChild(this._ground1, -1);
@@ -42,7 +42,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._ground2.setPosition(cc.p(winSize.width, winSize.height-64));
         var sequence2 = cc.Sequence.create(
             cc.MoveBy.create(0.02, cc.p(-5,0)),
-            cc.CallFunc.create(this, this.resetPositionGround, this._ground2));
+            cc.CallFunc.create(this, this.resetPositionLoopableNode, this._ground2));
         var moveGround2 = cc.RepeatForever.create(sequence2);
         this._ground2.runAction(moveGround2);
         this.addChild(this._ground2, -1);
@@ -55,7 +55,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._cloudBehind1.runAction(cc.RepeatForever.create(
             cc.Sequence.create(
                 cc.MoveBy.create(0.4, cc.p(-4,0)),
-                cc.CallFunc.create(this, this.resetPositionCloudBehind, this._cloudBehind1)
+                cc.CallFunc.create(this, this.resetPositionLoopableNode, this._cloudBehind1)
             ))
         );
         this.addChild(this._cloudBehind1, -1);
@@ -66,7 +66,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._cloudBehind2.runAction(cc.RepeatForever.create(
             cc.Sequence.create(
                 cc.MoveBy.create(0.4, cc.p(-4,0)),
-                cc.CallFunc.create(this, this.resetPositionCloudBehind, this._cloudBehind2)
+                cc.CallFunc.create(this, this.resetPositionLoopableNode, this._cloudBehind2)
             ))
         );
         this.addChild(this._cloudBehind2, -1);
@@ -78,7 +78,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._building1.runAction(cc.RepeatForever.create(
             cc.Sequence.create(
                 cc.MoveBy.create(0.3, cc.p(-4,0)),
-                cc.CallFunc.create(this, this.resetPositionGround, this._building1)
+                cc.CallFunc.create(this, this.resetPositionLoopableNode, this._building1)
             ))
         );
         this.addChild(this._building1, -1);
@@ -89,7 +89,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._building2.runAction(cc.RepeatForever.create(
             cc.Sequence.create(
                 cc.MoveBy.create(0.3, cc.p(-4,0)),
-                cc.CallFunc.create(this, this.resetPositionGround, this._building2)
+                cc.CallFunc.create(this, this.resetPositionLoopableNode, this._building2)
             ))
         );
         this.addChild(this._building2, -1);
@@ -101,7 +101,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._cloudFront1.runAction(cc.RepeatForever.create(
             cc.Sequence.create(
                 cc.MoveBy.create(0.45, cc.p(-5,0)),
-                cc.CallFunc.create(this, this.resetPositionCloudFront, this._cloudFront1)
+                cc.CallFunc.create(this, this.resetPositionLoopableNode, this._cloudFront1)
             ))
         );
         this.addChild(this._cloudFront1, -1);
@@ -112,7 +112,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._cloudFront2.runAction(cc.RepeatForever.create(
             cc.Sequence.create(
                 cc.MoveBy.create(0.45, cc.p(-5,0)),
-                cc.CallFunc.create(this, this.resetPositionCloudFront, this._cloudFront2)
+                cc.CallFunc.create(this, this.resetPositionLoopableNode, this._cloudFront2)
             ))
         );
         this.addChild(this._cloudFront2, -1);
@@ -125,24 +125,16 @@ var GameSessionLayer = cc.LayerColor.extend({
         // add test zombie
         var zombie = Zombie.create();
         zombie.setPosition(cc.p(winSize.width/2, winSize.height/2));
-        zombie.playDieAnimation();
+        zombie.playWalkAnimation();
         this.addChild(zombie);
 
         this.setTouchEnabled(true);
         this.setKeyboardEnabled(true);
         return true;
     },
-    resetPositionGround:function (node) {
+    resetPositionLoopableNode:function (node) {
         if(node.getPositionX() + 512 < 0)
             node.setPositionX(512);
-    },
-    resetPositionCloudBehind:function (node) {
-        if(node.getPositionX() + 478 < 0)
-            node.setPosition(478);
-    },
-    resetPositionCloudFront:function (node) {
-        if(node.getPositionX() + 336 < 0)
-            node.setPosition(336);
     },
 
     onTouchesBegan:function (touches, event) {
