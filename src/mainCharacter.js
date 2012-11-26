@@ -26,6 +26,7 @@ var MainCharacter = cc.Sprite.extend({
 	_aimVec:null,
 	_isWeaponFirstShotOut: false,
 	_countingWeaponShotCoolDownTime:0,
+	_bullets:null,
 
 	// attributes
 	hp:100,
@@ -46,6 +47,7 @@ var MainCharacter = cc.Sprite.extend({
 
 		this._aimVec = cc.p(-1.0, 0.0);	// default of the weapon sprite
 		this._bulletSpawnPoint = cc.p(-1.0, -1.0); // dummy
+		this._bullets = [];
 
 		// ## ANIMATION ##
 		// walk
@@ -87,6 +89,7 @@ var MainCharacter = cc.Sprite.extend({
 		this.playWalkAnimation();
 		// schedule update
 		this.schedule(this.countTime, 1.0);
+		this.scheduleUpdate();
 
 		return true;
 	},
@@ -178,8 +181,9 @@ var MainCharacter = cc.Sprite.extend({
 			var moveTo = cc.MoveTo.create(1.0, destPos);
 			var action = cc.Sequence.create(
 				moveTo,
-				cc.CallFunc.create(bullet, bullet.removeFromParentAndCleanup, true));
+				cc.CallFunc.create(this, this.removeBullet, bullet));
 			bullet.runAction(action);
+			this._bullets.push(bullet);
 			parent.addChild(bullet);
 		}
 		else if(this.currentWeapon == MainCharacterWeapon.SHOTGUN)
@@ -220,18 +224,24 @@ var MainCharacter = cc.Sprite.extend({
 					var moveTo = cc.MoveTo.create(1.0, destPos);
 					var action = cc.Sequence.create(
 						moveTo,
-						cc.CallFunc.create(bullet, bullet.removeFromParentAndCleanup, true));
+						cc.CallFunc.create(this, this.removeBullet, bullet));
 					bullet.runAction(action);
+					this._bullets.push(bullet);
 					parent.addChild(bullet);
 				}
 			}
 		}
 	},
+	removeBullet:function (bullet) {
+		// remove from internal manage list
+		cc.ArrayRemoveObject(this._bullets, bullet);
+		// clear all actions of bullet itself
+		bullet.removeFromParentAndCleanup(true);
+	},
 	countTime:function(dt) {
 		if(this._isWeaponFirstShotOut)
 		{
 			this._countingWeaponShotCoolDownTime += dt;
-			global.log(this._countingWeaponShotCoolDownTime);
 
 			// according to the weapon currently selected
 			/*if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
@@ -248,6 +258,33 @@ var MainCharacter = cc.Sprite.extend({
 				{
 					this._countingWeaponShotCoolDownTime = 0;
 					this._isWeaponFirstShotOut = false;
+				}
+			}
+		}
+	},
+	update:function(dt) {
+		// checking collision of bullets against the zombie
+		for(var i=0; i<this._bullets.length; i++)
+		{
+			var b = this._bullets[i];
+
+			for(var j=0; j<this.getParent().zombies.length; j++)
+			{
+				var z = this.getParent().zombies[j];
+
+				// hit once by the same bullet
+				if(z.currentState == ZombieStates.BEINGHIT_STATE)
+					continue;
+
+				if(cc.Rect.CCRectIntersectsRect(
+					cc.rect(z.getPositionX(), z.getPositionY(), 32, 32),
+					cc.rect(b.getPositionX(), b.getPositionY(), b.getContentSize().width, b.getContentSize().height))
+					)
+				{
+					global.log("hit by bullet");
+					z.hitByBullet(this.currentWeapon, this._aimVec);
+
+					break;
 				}
 			}
 		}

@@ -22,3 +22,22 @@ var global = {
 		}
 	}
 };
+
+// Math utilities
+var gmath = {
+	randomDirectionValue:function() {
+		var dir = 1.0;
+		if(Math.random() > 0.5)
+			dir = -1.0;
+
+		return dir;
+	},
+	// random [min, max]
+	randomBetween:function(min, max) {
+		return min + Math.random() * (max-min);
+	},
+	// Input is cc.Point
+	getLengthFrom:function(vec1, vec2) {
+		return Math.sqrt( Math.pow(vec1.x - vec2.x, 2), Math.pow(vec1.y - vec2.y, 2));
+	}
+}

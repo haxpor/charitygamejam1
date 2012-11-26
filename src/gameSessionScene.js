@@ -11,6 +11,8 @@ var GameSessionLayer = cc.LayerColor.extend({
     _cloudBehind1:null,
     _cloudBehind2:null,
 
+    zombies:null,
+
     initWithColor:function (color) {
 
         if(!this._super(color))
@@ -20,6 +22,9 @@ var GameSessionLayer = cc.LayerColor.extend({
         }
 
         var winSize = cc.Director.getInstance().getWinSize();
+
+        // init
+        this.zombies = [];
 
         // background
         this._sky = cc.Sprite.create(res_sky);
@@ -123,9 +128,9 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._mc.addSelfToNode(this);
 
         // add test zombie
-        var zombie = Zombie.create();
-        zombie.setPosition(cc.p(winSize.width/2, winSize.height/2));
-        zombie.playWalkAnimation();
+        var zombie = Zombie.create(this._mc.getPosition());
+        zombie.setPosition(cc.p(winSize.width/2 * 0.2, winSize.height/2));
+        this.zombies.push(zombie);
         this.addChild(zombie);
 
         this.setTouchEnabled(true);
