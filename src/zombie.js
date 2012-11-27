@@ -193,9 +193,6 @@ var Zombie = cc.Sprite.extend({
 	updateAI:function (dt) {
 		if(this.currentState == ZombieStates.WALK_WANDER_STATE)
 		{
-			//var val = gmath.getLengthFrom(this._targetPos, this.getPosition());
-			//global.log("val = " + val);
-
 			if(gmath.getLengthFrom(this._targetPos, this.getPosition()) < ZombieSettings.APPROACH_LENGTH)
 			{
 				// clear the wander state
@@ -256,8 +253,6 @@ var Zombie = cc.Sprite.extend({
 					this._targetPos.y - Math.random() * 20 * gmath.randomDirectionValue()
 					);
 
-				//global.log("targetPos : " + this._targetPos.x + ", " + this._targetPos.y);
-
 				var moveTo = cc.MoveTo.create(
 					gmath.randomBetween(ZombieSettings.MIN_DURATION_MOVETO_APPROACH, ZombieSettings.MAX_DURATION_MOVETO_APPROACH),
 					nextPos);
@@ -287,7 +282,6 @@ var Zombie = cc.Sprite.extend({
 				this._isReachedNextWanderPos = true;
 				this.nextState = ZombieStates.BEINGHIT_WAITING_STATE;
 				nextStateFeed = ZombieStates.WALK_APPROACH_STATE;
-				global.log("entered approach state");
 			}
 			else
 			{
@@ -356,24 +350,35 @@ var Zombie = cc.Sprite.extend({
 
 			// knock-back by the bullet
 			var moveBy = cc.MoveBy.create(0.032, cc.p(3*hitUnitVec.x, 3*hitUnitVec.y));
+			var sequence = cc.Sequence.create(
+				moveBy,
+				cc.CallFunc.create(this, this._limitKnockBackY));
 			this.stopActionByTag(ZombieActionTag.MOVE);
 			this._isReachedNextWanderPos = false;	// prevent from flickering animation
-			this.runAction(moveBy);
+			this.runAction(sequence);
 		}
 		else if(typeOfBullet == MainCharacterWeapon.SHOTGUN)
 		{
 			this.hp -= 5;
 
 			// knock-back by the bullet
-			var moveBy = cc.MoveBy.create(0.032, cc.p(10*hitUnitVec.x, 10*hitUnitVec.y));
+			var moveBy = cc.MoveBy.create(0.032, cc.p(12*hitUnitVec.x, 12*hitUnitVec.y));
+			var sequence = cc.Sequence.create(
+				moveBy,
+				cc.CallFunc.create(this, this._limitKnockBackY));
 			this.stopActionByTag(ZombieActionTag.MOVE);
 			this._isReachedNextWanderPos = false;	// prevent from flickering animation
-			this.runAction(moveBy);
+			this.runAction(sequence);
 		}
 
 		this.nextState = ZombieStates.BEINGHIT_STATE;
 
 		global.log("it's in hitByBullet [" + this.numberOfRunningActions() + "]");
+	},
+	_limitKnockBackY:function () {
+		var checkY = cc.Director.getInstance().getWinSize().height - 64;
+		if(this.getPositionY() > checkY)
+			this.setPositionY(checkY);
 	},
 	_changeToWalkWanderState:function () {
 		this.nextState = ZombieStates.WALK_WANDER_STATE;

@@ -177,9 +177,6 @@ var MainCharacter = cc.Sprite.extend({
         // update rotation to weapon
         this._weapon.setRotation(angle);
         // update the bullet vector from angle
-        //this._bulletVec.x = ((this._bulletVec.x - this._weapon.getPositionX()) * Math.cos(angle)) - ((this._weapon.getPositionY() - this._bulletVec.y) * Math.sin(angle)) + this._weapon.getPositionX();
-        //this._bulletVec.y = ((this._weapon.getPositionY() - this._bulletVec.y) * Math.cos(angle)) - ((this._bulletVec.x - this._weapon.getPositionX()) * Math.sin(angle)) + this._weapon.getPositionY();	
-
         if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
         {
         	this._bulletVec.x = (WeaponBulletVec.MINIGUN_X * Math.cos(acosVal)) - (WeaponBulletVec.MINIGUN_Y * Math.sin(acosVal));
@@ -193,8 +190,6 @@ var MainCharacter = cc.Sprite.extend({
 
         // update aiming vector
         this._aimVec = vec;
-
-        //global.log("updated rotation global");
 	},
 	shoot:function(parent) {
 		if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
@@ -310,7 +305,6 @@ var MainCharacter = cc.Sprite.extend({
 					cc.rect(b.getPositionX(), b.getPositionY(), b.getContentSize().width, b.getContentSize().height))
 					)
 				{
-					global.log("hit by bullet");
 					z.hitByBullet(this.currentWeapon, this._aimVec);
 
 					break;
