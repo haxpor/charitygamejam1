@@ -9,21 +9,22 @@ var ZombieStates = {
 }
 
 var ZombieSettings = {
-	APPROACH_LENGTH: 50,	// length before zombie approaches to attack a target directly
-	MAX_WANDER_X: 10,
-	MAX_WANDER_Y: 10,
+	APPROACH_LENGTH: 200,	// length before zombie approaches to attack a target directly
+	MAX_WANDER_X: 30,
+	MAX_WANDER_Y: 15,
 	//MAX_DELAY_EACH_WANDER_POS: 0.7, 
 	//MIN_DELAY_EACH_WANDER_POS: 0.1,
 	MAX_DURATION_MOVETO_WANDER: 0.6,
 	MIN_DURATION_MOVETO_WANDER: 0.34,
-	MAX_DURATION_MOVETO_APPRAOCH: 0.35,
-	MIX_DURATION_MOVETO_WANDER: 0.15
+	MAX_DURATION_MOVETO_APPROACH: 3.5,
+	MIN_DURATION_MOVETO_APPROACH: 2.0
 }
 
 var ZombieActionTag = {
-	ANIMATION: 1,
-	MOVE: 2,
-	HIT_SEQUENCE: 3
+	ANIMATION: 1,	// normal all basic animations
+	MOVE_WANDER: 2,
+	MOVE_APPROACH: 3,
+	HIT_SEQUENCE: 4
 }
 
 var Zombie = cc.Sprite.extend({
@@ -35,6 +36,8 @@ var Zombie = cc.Sprite.extend({
 
 	_targetPos:null,
 	_isReachedNextWanderPos:true,
+	_isReachedNextApproachPos:true,
+	_isBeganAttackAnimation:false,
 
 	// attributes
 	hp:100,
@@ -63,7 +66,7 @@ var Zombie = cc.Sprite.extend({
 		}
 		var animate = cc.Animate.create(cc.Animation.create(frames, 1/6.0));
 		this._walkAnimAction = cc.RepeatForever.create(animate);
-		this._walkAnimAction.setTag(1);
+		this._walkAnimAction.setTag(ZombieActionTag.ANIMATION);
 
 		// attack
 		frames.length = 0;
@@ -72,7 +75,7 @@ var Zombie = cc.Sprite.extend({
 			frames.push(cc.SpriteFrame.create(res_zombie, cc.rect(i*32,32,32,32)));
 		}
 		animate = cc.Animate.create(cc.Animation.create(frames, 1/7.0));
-		this._attackAnimAction = cc.Repeat.create(animate, 1);
+		this._attackAnimAction = cc.RepeatForever.create(animate);
 		this._attackAnimAction.setTag(ZombieActionTag.ANIMATION);
 
 		// being hit
@@ -126,12 +129,25 @@ var Zombie = cc.Sprite.extend({
 
 	// being hit animation
 	playBeingHitAnimation:function (nextState) {
+		// stop move approach
+		this.stopActionByTag(ZombieActionTag.MOVE_APPROACH);
+		this._isReachedNextApproachPos = true;
+
+		// stop move wander
+		this.stopActionByTag(ZombieActionTag.MOVE_WANDER);
+		this._isReachedNextWanderPos = true;
+
+		// stop attack
+		this.stopActionByTag(ZombieActionTag.ANIMATION);
+		this._isBeganAttackAnimation = false;
+
+		// stop previous hit sequence (below)
 		this.stopActionByTag(ZombieActionTag.HIT_SEQUENCE);
 
 		if(nextState == ZombieStates.DIE_STATE)
 		{
 			var sequence = cc.Sequence.create(
-				cc.CallFunc.create(this, this._changeToState, ZombieStates.DIE_STATE),
+				cc.CallFunc.create(this, this._changeToDieState),
 				this._beingHitAnimAction,
 				this._dieAnimAction
 			);
@@ -175,60 +191,87 @@ var Zombie = cc.Sprite.extend({
 	updateAI:function (dt) {
 		if(this.currentState == ZombieStates.WALK_WANDER_STATE)
 		{
-			if(this._isReachedNextWanderPos)
-			{
-				// a new wander point
-				this._isReachedNextWanderPos = false;
-
-				// random a next wander position
-				var nextWanderPos = cc.p(
-					this.getPositionX() + Math.random() * ZombieSettings.MAX_WANDER_X,
-					this.getPositionY() + Math.random() * ZombieSettings.MAX_WANDER_Y * gmath.randomDirectionValue());
-				// bound
-				var winSize = cc.Director.getInstance().getWinSize();
-				if(nextWanderPos.y < 32)
-				{
-					nextWanderPos.y = 32;
-				}
-				else if(nextWanderPos.y > winSize.height-64-32)
-				{
-					nextWanderPos.y = winSize.height - 64 - 32;
-				}
-
-				// set course for nextWanderPos
-				var moveTo = cc.MoveTo.create(
-					gmath.randomBetween(ZombieSettings.MIN_DURATION_MOVETO_WANDER, ZombieSettings.MAX_DURATION_MOVETO_WANDER),
-					nextWanderPos);
-				var sequence = cc.Sequence.create(
-					moveTo,
-					cc.CallFunc.create(this, this.movedToNextWanderPos)
-				);
-				sequence.setTag(ZombieActionTag.MOVE);
-				this.runAction(sequence);
-				global.log("it's in WALK WANDER [" + this.numberOfRunningActions() + "]");
-			}
-		}
-		else if(this.currentState == ZombieSettings.WALK_APPROACH_STATE)
-		{
-			// set course directly to a target
-			var nextPos = cc.p(
-				this._targetPos.x - Math.random() * 5 - 4,
-				this._targetPos.y - Math.random() * 20 * gmath.randomDirectionValue()
-				);
-
-			var moveTo = cc.MoveTo.create(
-				gmath.randomBetween(ZombieSettings.MIN_DURATION_MOVETO_APPRAOCH, ZombieSettings.MAX_DURATION_MOVETO_APPRAOCH));
-			var sequence = cc.Sequence.create(
-				moveTo,
-				cc.CallFunc.create(this, this._changeToAttackState)
-				);
-			this.runAction(sequence);
-		}
-		else if(this.currentState == ZombieStates.BEINGHIT_STATE)
-		{
 			//var val = gmath.getLengthFrom(this._targetPos, this.getPosition());
 			//global.log("val = " + val);
 
+			if(gmath.getLengthFrom(this._targetPos, this.getPosition()) < ZombieSettings.APPROACH_LENGTH)
+			{
+				// clear the wander state
+				this._isReachedNextWanderPos = true;
+				this.stopActionByTag(ZombieActionTag.MOVE_WANDER);
+
+				// change state to approch state
+				this.nextState = ZombieStates.WALK_APPROACH_STATE;
+				global.log("set to change to APPROACH state");
+			}
+			else
+			{
+				if(this._isReachedNextWanderPos)
+				{
+					// a new wander point
+					this._isReachedNextWanderPos = false;
+
+					// random a next wander position
+					var nextWanderPos = cc.p(
+						this.getPositionX() + Math.random() * ZombieSettings.MAX_WANDER_X,
+						this.getPositionY() + Math.random() * ZombieSettings.MAX_WANDER_Y * gmath.randomDirectionValue());
+					// bound
+					var winSize = cc.Director.getInstance().getWinSize();
+					if(nextWanderPos.y < 32)
+					{
+						nextWanderPos.y = 32;
+					}
+					else if(nextWanderPos.y > winSize.height-64-32)
+					{
+						nextWanderPos.y = winSize.height - 64 - 32;
+					}
+
+					// set course for nextWanderPos
+					var moveTo = cc.MoveTo.create(
+						gmath.randomBetween(ZombieSettings.MIN_DURATION_MOVETO_WANDER, ZombieSettings.MAX_DURATION_MOVETO_WANDER),
+						nextWanderPos);
+					var sequence = cc.Sequence.create(
+						moveTo,
+						cc.CallFunc.create(this, this.movedToNextWanderPos)
+					);
+					sequence.setTag(ZombieActionTag.MOVE_WANDER);
+					this.runAction(sequence);
+				}
+			}
+
+			global.log("it's in WALK WANDER [" + this.numberOfRunningActions() + "]");
+		}
+		else if(this.currentState == ZombieStates.WALK_APPROACH_STATE)
+		{
+			if(this._isReachedNextApproachPos)
+			{
+				// set to begin
+				this._isReachedNextApproachPos = false;
+
+				// set course directly to a target
+				var nextPos = cc.p(
+					this._targetPos.x - Math.random() * 5 - 4,
+					this._targetPos.y - Math.random() * 20 * gmath.randomDirectionValue()
+					);
+
+				//global.log("targetPos : " + this._targetPos.x + ", " + this._targetPos.y);
+
+				var moveTo = cc.MoveTo.create(
+					gmath.randomBetween(ZombieSettings.MIN_DURATION_MOVETO_APPROACH, ZombieSettings.MAX_DURATION_MOVETO_APPROACH),
+					nextPos);
+				var sequence = cc.Sequence.create(
+					moveTo,
+					cc.CallFunc.create(this, this.movedToNextApproachPos),
+					cc.CallFunc.create(this, this._changeToAttackState)
+					);
+				sequence.setTag(ZombieActionTag.MOVE_APPROACH);
+				this.runAction(sequence);
+			}
+
+			global.log("it's in WALK APPROACH [" + this.numberOfRunningActions() + "]");
+		}
+		else if(this.currentState == ZombieStates.BEINGHIT_STATE)
+		{
 			var nextStateFeed = -1;
 
 			// check to change state
@@ -262,8 +305,13 @@ var Zombie = cc.Sprite.extend({
 		}
 		else if(this.currentState == ZombieStates.ATTACK_STATE)
 		{
-			global.log("Changed to ATTACK STATE");
-			// add later ...
+			if(!this._isBeganAttackAnimation)
+			{
+				this._isBeganAttackAnimation = true;
+
+				// play animation
+				this.playAttackAnimation();
+			}
 		}
 		else if(this.currentState == ZombieStates.DIE_STATE)
 		{
@@ -294,6 +342,9 @@ var Zombie = cc.Sprite.extend({
 	},
 	movedToNextWanderPos:function() {
 		this._isReachedNextWanderPos = true;
+	},
+	movedToNextApproachPos:function() {
+		this._isReachedNextApproachPos = true;
 	},
 	hitByBullet:function(typeOfBullet, hitUnitVec) {
 		// reduce hp
@@ -327,6 +378,9 @@ var Zombie = cc.Sprite.extend({
 	},
 	_changeToWalkApproachState:function () {
 		this.nextState = ZombieStates.WALK_APPROACH_STATE;
+	},
+	_changeToDieState:function () {
+		this.nextState = ZombieStates.DIE_STATE;
 	},
 	_changeToAttackState:function () {
 		this.nextState = ZombieStates.ATTACK_STATE;

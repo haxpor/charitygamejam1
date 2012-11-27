@@ -129,9 +129,19 @@ var GameSessionLayer = cc.LayerColor.extend({
 
         // add test zombie
         var zombie = Zombie.create(this._mc.getPosition());
-        zombie.setPosition(cc.p(winSize.width/2 * 0.2, winSize.height/2));
+        zombie.setPosition(cc.p(-64, winSize.height/2));
         this.zombies.push(zombie);
         this.addChild(zombie);
+
+        var zombie2 = Zombie.create(this._mc.getPosition());
+        zombie2.setPosition(cc.p(-64, winSize.height/2 * 1.40));
+        this.zombies.push(zombie2);
+        this.addChild(zombie2);
+
+        var zombie3 = Zombie.create(this._mc.getPosition());
+        zombie3.setPosition(cc.p(-64, winSize.height/2 * 2.50));
+        this.zombies.push(zombie3);
+        this.addChild(zombie3);
 
         this.setTouchEnabled(true);
         this.setKeyboardEnabled(true);
