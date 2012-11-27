@@ -123,10 +123,13 @@ var GameSessionLayer = cc.LayerColor.extend({
         this.addChild(this._cloudFront2, -1);
 
         // add character
+        global.loadSpriteFrames(res_mainCharacterPlist);
         this._mc = MainCharacter.create();
         this._mc.setPosition(cc.p(winSize.width * 0.8, winSize.height/2 - 32));
         this._mc.addSelfToNode(this);
+        global.unloadSpriteFrames(res_mainCharacterPlist);
 
+        global.loadSpriteFrames(res_zombiePlist);
         // add test zombie
         for(var i=0; i<20; i++)
         {
@@ -135,6 +138,7 @@ var GameSessionLayer = cc.LayerColor.extend({
             this.zombies.push(zombie);
             this.addChild(zombie);
         }
+        global.unloadSpriteFrames(res_zombiePlist);
 
         this.setTouchEnabled(true);
         this.setKeyboardEnabled(true);

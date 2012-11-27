@@ -20,6 +20,17 @@ var global = {
 			var soundId = cc.AudioEngine.getInstance().playEffect(path);
 			return soundId;
 		}
+	},
+
+	// Spritesheet & Frame related utilities function
+	loadSpriteFrames:function (plist) {
+		cc.SpriteFrameCache.getInstance().addSpriteFrames(plist);
+	},
+	unloadSpriteFrames:function (plist) {
+		cc.SpriteFrameCache.getInstance().removeSpriteFramesFromFile(plist);
+	},
+	getSpriteFrame:function (name) {
+		return cc.SpriteFrameCache.getInstance().getSpriteFrame(name);
 	}
 };
 

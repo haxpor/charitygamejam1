@@ -45,8 +45,8 @@ var Zombie = cc.Sprite.extend({
 	currentState: -1,
 	nextState: -1,
 
-	initWithFileAndTargetPos:function(filename, rect, pos) {
-		if(!this.initWithFile(filename, rect))
+	initWithSpriteFrameAndTargetPos:function(frame, pos) {
+		if(!this.initWithSpriteFrame(frame))
 		{
 			return false;
 		}
@@ -62,7 +62,7 @@ var Zombie = cc.Sprite.extend({
 		// walk
 		for(var i=0; i<4; i++)
 		{
-			frames.push(cc.SpriteFrame.create(res_zombie, cc.rect(i*32,0,32,32)));
+			frames.push(global.getSpriteFrame("zombie_walk_" + (i+1) + ".png"));
 		}
 		var animate = cc.Animate.create(cc.Animation.create(frames, 1/6.0));
 		this._walkAnimAction = cc.RepeatForever.create(animate);
@@ -72,7 +72,7 @@ var Zombie = cc.Sprite.extend({
 		frames.length = 0;
 		for(var i=0; i<4; i++)
 		{
-			frames.push(cc.SpriteFrame.create(res_zombie, cc.rect(i*32,32,32,32)));
+			frames.push(global.getSpriteFrame("zombie_attack_" + (i+1) + ".png"));
 		}
 		animate = cc.Animate.create(cc.Animation.create(frames, 1/7.0));
 		this._attackAnimAction = cc.RepeatForever.create(animate);
@@ -82,7 +82,7 @@ var Zombie = cc.Sprite.extend({
 		frames.length = 0;
 		for(var i=0; i<4; i++)
 		{
-			frames.push(cc.SpriteFrame.create(res_zombie, cc.rect(i*32,64,32,32)));
+			frames.push(global.getSpriteFrame("zombie_underattack_" + (i+1) + ".png"));
 		}
 		var beingHitAnim = cc.Animation.create(frames, 1/7.0);
 		beingHitAnim.setRestoreOriginalFrame(false);
@@ -94,7 +94,7 @@ var Zombie = cc.Sprite.extend({
 		frames.length = 0;
 		for(var i=0; i<4; i++)
 		{
-			frames.push(cc.SpriteFrame.create(res_zombie, cc.rect(i*32,96,32,32)));
+			frames.push(global.getSpriteFrame("zombie_die_" + (i+1) + ".png"));
 		}
 		animate = cc.Animate.create(cc.Animation.create(frames, 1/7.0));
 		this._dieAnimAction = cc.Sequence.create(
@@ -391,7 +391,7 @@ var Zombie = cc.Sprite.extend({
 
 Zombie.create = function(targetPos) {
 	var zombie = new Zombie();
-	if(zombie && zombie.initWithFileAndTargetPos(res_zombie, cc.rect(0,0,32,32), targetPos))
+	if(zombie && zombie.initWithSpriteFrameAndTargetPos(global.getSpriteFrame("zombie_walk_1.png"), targetPos))
 	{
 		return zombie;
 	}

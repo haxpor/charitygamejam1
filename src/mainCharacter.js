@@ -15,6 +15,13 @@ var WeaponCoolDownTime = {
 	SHOTGUN: 1.0
 }
 
+var WeaponBulletVec = {
+	MINIGUN_X: -16,
+	MINIGUN_Y: -7,
+	SHOTGUN_X: -12,
+	SHOTGUN_Y: 1
+}
+
 var MainCharacter = cc.Sprite.extend({
 	// animations + actions
 	_walkAnimAction:null,
@@ -24,6 +31,7 @@ var MainCharacter = cc.Sprite.extend({
 	// internal
 	_weapon:null,
 	_aimVec:null,
+	_bulletVec:null,
 	_isWeaponFirstShotOut: false,
 	_countingWeaponShotCoolDownTime:0,
 	_bullets:null,
@@ -33,9 +41,9 @@ var MainCharacter = cc.Sprite.extend({
 	currentState: -1,
 	currentWeapon: -1,
 
-	initWithFile:function(filename, rect) {
+	initWithSpriteFrame:function(frame) {
 		// call super's init() function first
-		if(!this._super(filename, rect))
+		if(!this._super(frame))
 		{
 			return false;
 		}
@@ -46,6 +54,7 @@ var MainCharacter = cc.Sprite.extend({
 		this.currentWeapon = MainCharacterWeapon.MINIGUN;
 
 		this._aimVec = cc.p(-1.0, 0.0);	// default of the weapon sprite
+		this._bulletVec = cc.p(WeaponBulletVec.MINIGUN_X, WeaponBulletVec.MINIGUN_Y);
 		this._bulletSpawnPoint = cc.p(-1.0, -1.0); // dummy
 		this._bullets = [];
 
@@ -53,18 +62,18 @@ var MainCharacter = cc.Sprite.extend({
 		// walk
 		var frames = new Array();
 
-		for(var i=0; i<3; i++)
+		for(var i=0; i<4; i++)
 		{
-			frames.push(cc.SpriteFrame.create(res_mainCharacter, cc.rect(i*32,0, 32, 32)));
+			frames.push(global.getSpriteFrame("main_char_walk" + (i+1) + ".png"));
 		}
 		var animate = cc.Animate.create(cc.Animation.create(frames, 1/7.0));
 		this._walkAnimAction = cc.RepeatForever.create(animate);
 
 		// being hit
 		frames.length = 0;
-		for(var i=0; i<3; i++)
+		for(var i=0; i<4; i++)
 		{
-			frames.push(cc.SpriteFrame.create(res_mainCharacter, cc.rect(i*32, 32, 32, 32)));
+			frames.push(global.getSpriteFrame("main_char_underattack" + (i+1) + ".png"));
 		}
 		animate = cc.Animate.create(cc.Animation.create(frames, 1/7.0));
 		this._beingHitAnimAction = cc.Sequence.create(
@@ -74,16 +83,17 @@ var MainCharacter = cc.Sprite.extend({
 
 		// die
 		frames.length = 0;
-		for(var i=0; i<3; i++)
-			frames.push(cc.SpriteFrame.create(res_mainCharacter, cc.rect(i*32, 32*2, 32, 32)));
-		for(var i=0; i<3; i++)
-			frames.push(cc.SpriteFrame.create(res_mainCharacter, cc.rect(i*32, 32*3, 32, 32)));
+		for(var i=0; i<4; i++)
+		{
+			frames.push(global.getSpriteFrame("main_char_die" + (i+1) + ".png"));
+		}
+
 		animate = cc.Animate.create(cc.Animation.create(frames, 1/8.0));
 		this._dieAnimAction = cc.Repeat.create(animate, 1);
 
 		// ## WEAPON ##
 		this._weapon = cc.Sprite.create(res_weapons, cc.rect(0, 0, 32, 32));
-		this._weapon.setAnchorPoint(cc.p(1.0, 0.5));
+		//this._weapon.setAnchorPoint(cc.p(1.0, 0.5));
 
 		// run default animation
 		this.playWalkAnimation();
@@ -125,7 +135,7 @@ var MainCharacter = cc.Sprite.extend({
 	// override: also set the position of weapon
 	setPosition:function(pos) {
 		this._super(pos);
-		this._weapon.setPosition(cc.p(pos.x+16,pos.y+16));
+		this._weapon.setPosition(pos);
 	},
 
 	addSelfToNode:function(node) {
@@ -157,21 +167,40 @@ var MainCharacter = cc.Sprite.extend({
 		var dot = vec.x * -1.0 + vec.y * 0.0;
 
 		// calculate rotation angle
-		var angle = Math.acos(dot) * 180 / Math.PI;
+		var acosVal = Math.acos(dot);
+		var angle = acosVal * 180 / Math.PI;
 		if(vec.y < 0.0)
             angle *= -1.0;
+        if(vec.y > 0.0)
+        	acosVal *= -1.0;
 
         // update rotation to weapon
         this._weapon.setRotation(angle);
+        // update the bullet vector from angle
+        //this._bulletVec.x = ((this._bulletVec.x - this._weapon.getPositionX()) * Math.cos(angle)) - ((this._weapon.getPositionY() - this._bulletVec.y) * Math.sin(angle)) + this._weapon.getPositionX();
+        //this._bulletVec.y = ((this._weapon.getPositionY() - this._bulletVec.y) * Math.cos(angle)) - ((this._bulletVec.x - this._weapon.getPositionX()) * Math.sin(angle)) + this._weapon.getPositionY();	
+
+        if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
+        {
+        	this._bulletVec.x = (WeaponBulletVec.MINIGUN_X * Math.cos(acosVal)) - (WeaponBulletVec.MINIGUN_Y * Math.sin(acosVal));
+        	this._bulletVec.y = (WeaponBulletVec.MINIGUN_Y * Math.cos(acosVal)) + (WeaponBulletVec.MINIGUN_X * Math.sin(acosVal));
+        }
+        else if(this.currentWeapon == MainCharacterWeapon.SHOTGUN)
+        {
+        	this._bulletVec.x = (WeaponBulletVec.SHOTGUN_X * Math.cos(acosVal)) - (WeaponBulletVec.SHOTGUN_Y * Math.sin(acosVal));
+        	this._bulletVec.y = (WeaponBulletVec.SHOTGUN_Y * Math.cos(acosVal)) + (WeaponBulletVec.SHOTGUN_X * Math.sin(acosVal));
+        }
 
         // update aiming vector
         this._aimVec = vec;
+
+        //global.log("updated rotation global");
 	},
 	shoot:function(parent) {
 		if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
 		{
 			// calculate a spawn pos
-			var spawnPos = cc.p(this._weapon.getPositionX() + this._aimVec.x*20, this._weapon.getPositionY() + this._aimVec.y*5);
+			var spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x, this._weapon.getPositionY() + this._bulletVec.y);
 			var destPos = cc.p(spawnPos.x + this._aimVec.x*512, spawnPos.y + this._aimVec.y*448);
 
 			// spawn a bullet
@@ -208,12 +237,12 @@ var MainCharacter = cc.Sprite.extend({
 
 					if(absAimVec.x > 0.6)
 					{
-						spawnPos = cc.p(this._weapon.getPositionX() + this._aimVec.x*21, this._weapon.getPositionY() + this._aimVec.y*5 + Math.random()*bullRandomSpawnDir*2);
+						spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x, this._weapon.getPositionY() + this._bulletVec.y + Math.random()*bullRandomSpawnDir*2);
 						destPos = cc.p(spawnPos.x + this._aimVec.x*512, spawnPos.y + this._aimVec.y*448 + Math.random()*bullRandomSpawnDir*20);
 					}
 					else if(absAimVec.y > 0.6)
 					{
-						spawnPos = cc.p(this._weapon.getPositionX() + this._aimVec.x*21 + Math.random()*bullRandomSpawnDir*2, this._weapon.getPositionY() + this._aimVec.y*5);
+						spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x + Math.random()*bullRandomSpawnDir*2, this._weapon.getPositionY() + this._bulletVec.y);
 						destPos = cc.p(spawnPos.x + this._aimVec.x*512 + Math.random()*bullRandomSpawnDir*20, spawnPos.y + this._aimVec.y*448);
 					}
 
@@ -293,7 +322,7 @@ var MainCharacter = cc.Sprite.extend({
 
 MainCharacter.create = function () {
 	var character = new MainCharacter();
-	if(character && character.initWithFile(res_mainCharacter, cc.rect(0,0,32,32)))
+	if(character && character.initWithSpriteFrame(global.getSpriteFrame("main_char_walk1.png")))
 	{
 		return character;
 	}
