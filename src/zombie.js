@@ -99,7 +99,9 @@ var Zombie = cc.Sprite.extend({
 		animate = cc.Animate.create(cc.Animation.create(frames, 1/7.0));
 		this._dieAnimAction = cc.Sequence.create(
 			cc.Repeat.create(animate, 1),
-			cc.Blink.create(1.0, 5),
+			//cc.Blink.create(0.4, 3),
+			//cc.CallFunc.create(this, this.setVisible, true),
+			cc.DelayTime.create(1.0),
 			cc.CallFunc.create(this, this.removeFromParentAndCleanup, true));
 		this._dieAnimAction.setTag(ZombieActionTag.ANIMATION);
 
