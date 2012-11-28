@@ -12,6 +12,7 @@ var GameSessionLayer = cc.LayerColor.extend({
     _cloudBehind2:null,
 
     zombies:null,
+    _zSpawner:null,
 
     initWithColor:function (color) {
 
@@ -129,16 +130,9 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._mc.addSelfToNode(this);
         global.unloadSpriteFrames(res_mainCharacterPlist);
 
-        global.loadSpriteFrames(res_zombiePlist);
-        // add test zombie
-        for(var i=0; i<20; i++)
-        {
-            var zombie = Zombie.create(this._mc.getPosition());
-            zombie.setPosition(cc.p(-64, winSize.height - 64 - i*64));
-            this.zombies.push(zombie);
-            this.addChild(zombie);
-        }
-        global.unloadSpriteFrames(res_zombiePlist);
+        // zombie spawner
+        global.loadSpriteFrames(res_zombiePlist);   // <-- make sure it's called the last
+        this._zSpawner = ZombieSpawner.create(this);
 
         this.setTouchEnabled(true);
         this.setKeyboardEnabled(true);
@@ -146,6 +140,11 @@ var GameSessionLayer = cc.LayerColor.extend({
         this.scheduleUpdate();
         return true;
     },
+    onExit:function () {
+        // unload the last call to load zombie's plist file
+        global.unloadSpriteFrames(res_zombiePlist);
+    },
+
     resetPositionLoopableNode:function (node) {
         if(node.getPositionX() + 512 < 0)
             node.setPositionX(512);
@@ -197,6 +196,10 @@ var GameSessionLayer = cc.LayerColor.extend({
         }
     },
     update:function(dt) {
+        // update spawner
+        this._zSpawner.update(dt);
+
+        // update reorder of child
         var height = cc.Director.getInstance().getWinSize().height;
 
         for(var i=0; i<this.zombies.length; i++)
@@ -205,6 +208,9 @@ var GameSessionLayer = cc.LayerColor.extend({
 
             this.reorderChild(z, height - z.getPositionY());
         }
+    },
+    getMainCharacter:function () {
+        return this._mc;
     }
 });
 

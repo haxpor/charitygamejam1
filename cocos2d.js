@@ -39,7 +39,8 @@
             'src/global.js',
             'src/mainCharacter.js',
             'src/zombie.js',
-            'src/mainMenuScene.js'
+            'src/mainMenuScene.js',
+            'src/zombieSpawner.js'
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {

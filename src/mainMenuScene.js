@@ -30,10 +30,6 @@ var MainMenuLayer = cc.LayerColor.extend({
 
 		return true;
 	},
-	onKeyUp:function(e)
-	{
-
-	},
 	onKeyDown:function(e) {
         // cycle through the available weapons
         if(e == cc.KEY.x)

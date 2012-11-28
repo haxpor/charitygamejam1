@@ -176,8 +176,6 @@ var Zombie = cc.Sprite.extend({
 			sequence.setTag(ZombieActionTag.HIT_SEQUENCE);
 			this.runAction(sequence);
 		}
-
-		global.log("play being hit animation [" + this.numberOfRunningActions() + "]");
 	},
 
 	// die animation
@@ -201,7 +199,6 @@ var Zombie = cc.Sprite.extend({
 
 				// change state to approch state
 				this.nextState = ZombieStates.WALK_APPROACH_STATE;
-				global.log("set to change to APPROACH state");
 			}
 			else
 			{
@@ -237,8 +234,6 @@ var Zombie = cc.Sprite.extend({
 					this.runAction(sequence);
 				}
 			}
-
-			global.log("it's in WALK WANDER [" + this.numberOfRunningActions() + "]");
 		}
 		else if(this.currentState == ZombieStates.WALK_APPROACH_STATE)
 		{
@@ -264,8 +259,6 @@ var Zombie = cc.Sprite.extend({
 				sequence.setTag(ZombieActionTag.MOVE_APPROACH);
 				this.runAction(sequence);
 			}
-
-			global.log("it's in WALK APPROACH [" + this.numberOfRunningActions() + "]");
 		}
 		else if(this.currentState == ZombieStates.BEINGHIT_STATE)
 		{
@@ -292,8 +285,6 @@ var Zombie = cc.Sprite.extend({
 
 			// play animation
 			this.playBeingHitAnimation(nextStateFeed);
-
-			global.log("it's in BEINGHIT STATE [" + this.numberOfRunningActions() + "]");
 		}
 		else if(this.currentState == ZombieStates.BEINGHIT_WAITING_STATE)
 		{
@@ -372,8 +363,6 @@ var Zombie = cc.Sprite.extend({
 		}
 
 		this.nextState = ZombieStates.BEINGHIT_STATE;
-
-		global.log("it's in hitByBullet [" + this.numberOfRunningActions() + "]");
 	},
 	_limitKnockBackY:function () {
 		var checkY = cc.Director.getInstance().getWinSize().height - 64;
