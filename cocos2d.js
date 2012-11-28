@@ -39,6 +39,7 @@
             'src/global.js',
             'src/mainCharacter.js',
             'src/zombie.js',
+            'src/mainMenuScene.js'
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {

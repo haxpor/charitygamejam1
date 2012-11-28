@@ -17,6 +17,8 @@ var res_mainCharacterSpriteSheet = "res/mainCharacter.png";
 var res_mainCharacterPlist = "res/mainCharacter.plist";
 var res_weapons = "res/weapons.png"
 
+var res_gameLogo = "res/cld1_logo.png";
+
 var g_ressources = [
     //image
     {type:"image", src: res_minigunBullet},
@@ -31,6 +33,7 @@ var g_ressources = [
     {type:"image", src: res_zombieSpriteSheet},
     {type:"image", src: res_mainCharacterSpriteSheet},
     {type:"image", src: res_weapons},
+    {type:"image", src: res_gameLogo},
 
     //plist
     {type:"plist", src: res_zombiePlist},
