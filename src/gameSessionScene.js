@@ -129,7 +129,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         global.loadSpriteFrames(res_mainCharacterPlist);
         this._mc = MainCharacter.create();
         this._mc.setPosition(cc.p(winSize.width * 0.8, winSize.height/2 - 32));
-        this.reorderChild(this._mc, winSize.height - this._mc.getPositionY());
+        this._mc.reorderSelf(this);
         this._mc.addSelfToNode(this);
         global.unloadSpriteFrames(res_mainCharacterPlist);
 

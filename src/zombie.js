@@ -17,7 +17,8 @@ var ZombieSettings = {
 	MAX_DURATION_MOVETO_WANDER: 0.6,
 	MIN_DURATION_MOVETO_WANDER: 0.34,
 	MAX_DURATION_MOVETO_APPROACH: 3.5,
-	MIN_DURATION_MOVETO_APPROACH: 2.0
+	MIN_DURATION_MOVETO_APPROACH: 2.0,
+	ATTACK_RATE: 2 	// reduce per finishing of animation set
 }
 
 var ZombieActionTag = {
@@ -75,7 +76,12 @@ var Zombie = cc.Sprite.extend({
 			frames.push(global.getSpriteFrame("zombie_attack_" + (i+1) + ".png"));
 		}
 		animate = cc.Animate.create(cc.Animation.create(frames, 1/7.0));
-		this._attackAnimAction = cc.RepeatForever.create(animate);
+		//this._attackAnimAction = cc.RepeatForever.create(animate);
+		this._attackAnimAction = cc.RepeatForever.create(
+			cc.Spawn.create(
+				cc.Repeat.create(animate, 1),
+				cc.CallFunc.create(this, this._reduceMcHP)
+			));
 		this._attackAnimAction.setTag(ZombieActionTag.ANIMATION);
 
 		// being hit
@@ -363,6 +369,9 @@ var Zombie = cc.Sprite.extend({
 		}
 
 		this.nextState = ZombieStates.BEINGHIT_STATE;
+	},
+	_reduceMcHP:function() {
+		this.getParent().getMainCharacter().hitByZombie(ZombieSettings.ATTACK_RATE);
 	},
 	_limitKnockBackY:function () {
 		var checkY = cc.Director.getInstance().getWinSize().height - 64;

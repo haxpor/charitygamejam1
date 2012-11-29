@@ -12,7 +12,7 @@ var MainCharacterWeapon = {
 
 var WeaponCoolDownTime = {
 	MINIGUN: 0.0, // no cool down time
-	SHOTGUN: 1.0
+	SHOTGUN: 1.20
 }
 
 var WeaponBulletVec = {
@@ -75,7 +75,7 @@ var MainCharacter = cc.Sprite.extend({
 		{
 			frames.push(global.getSpriteFrame("main_char_underattack" + (i+1) + ".png"));
 		}
-		animate = cc.Animate.create(cc.Animation.create(frames, 1/7.0));
+		animate = cc.Animate.create(cc.Animation.create(frames, 1/9.0));
 		this._beingHitAnimAction = cc.Sequence.create(
 			cc.CallFunc.create(this, this._stopWalkAnimation),
 			cc.Repeat.create(animate, 1),
@@ -89,7 +89,10 @@ var MainCharacter = cc.Sprite.extend({
 		}
 
 		animate = cc.Animate.create(cc.Animation.create(frames, 1/8.0));
-		this._dieAnimAction = cc.Repeat.create(animate, 1);
+		this._dieAnimAction = cc.Sequence.create(
+			cc.CallFunc.create(this, this.removeWeapon),
+			cc.Repeat.create(animate, 1),
+			cc.CallFunc.create(this, this.awakeGameOver));
 
 		// ## WEAPON ##
 		this._weapon = cc.Sprite.create(res_weapons, cc.rect(0, 0, 32, 32));
@@ -142,6 +145,12 @@ var MainCharacter = cc.Sprite.extend({
 		node.addChild(this);
 		node.addChild(this._weapon);
 	},
+	reorderSelf:function(parent) {
+		var winSize = cc.Director.getInstance().getWinSize();
+
+		parent.reorderChild(this, winSize.height - this.getPositionY());
+		parent.reorderChild(this._weapon, winSize.height - this._weapon.getPositionY());
+	},
 	changeWeaponTo:function(no) {
 		if(no == MainCharacterWeapon.MINIGUN)
 		{
@@ -154,104 +163,113 @@ var MainCharacter = cc.Sprite.extend({
 			this._weapon.setTextureRect(cc.rect(0, 32, 32, 32));
 		}
 	},
+	removeWeapon:function() {
+		this.getParent().removeChild(this._weapon);
+	},
 	updateWeaponRotationFrom:function(aimPos) {
-		var vec = cc.p(aimPos.x - this._weapon.getPositionX(), aimPos.y - this._weapon.getPositionY());
+		if(this.currentState != MainCharacterStates.DIE_STATE)
+		{
+			var vec = cc.p(aimPos.x - this._weapon.getPositionX(), aimPos.y - this._weapon.getPositionY());
 
-		// normalize
-		var l = 1.0 / Math.sqrt(vec.x * vec.x + vec.y * vec.y);
-		vec.x = vec.x * l;
-		vec.y = vec.y * l;
+			// normalize
+			var l = 1.0 / Math.sqrt(vec.x * vec.x + vec.y * vec.y);
+			vec.x = vec.x * l;
+			vec.y = vec.y * l;
 
-		// dot
-		// dot between unit-up vector, and vec
-		var dot = vec.x * -1.0 + vec.y * 0.0;
+			// dot
+			// dot between unit-up vector, and vec
+			var dot = vec.x * -1.0 + vec.y * 0.0;
 
-		// calculate rotation angle
-		var acosVal = Math.acos(dot);
-		var angle = acosVal * 180 / Math.PI;
-		if(vec.y < 0.0)
-            angle *= -1.0;
-        if(vec.y > 0.0)
-        	acosVal *= -1.0;
+			// calculate rotation angle
+			var acosVal = Math.acos(dot);
+			var angle = acosVal * 180 / Math.PI;
+			if(vec.y < 0.0)
+	            angle *= -1.0;
+	        if(vec.y > 0.0)
+	        	acosVal *= -1.0;
 
-        // update rotation to weapon
-        this._weapon.setRotation(angle);
-        // update the bullet vector from angle
-        if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
-        {
-        	this._bulletVec.x = (WeaponBulletVec.MINIGUN_X * Math.cos(acosVal)) - (WeaponBulletVec.MINIGUN_Y * Math.sin(acosVal));
-        	this._bulletVec.y = (WeaponBulletVec.MINIGUN_Y * Math.cos(acosVal)) + (WeaponBulletVec.MINIGUN_X * Math.sin(acosVal));
-        }
-        else if(this.currentWeapon == MainCharacterWeapon.SHOTGUN)
-        {
-        	this._bulletVec.x = (WeaponBulletVec.SHOTGUN_X * Math.cos(acosVal)) - (WeaponBulletVec.SHOTGUN_Y * Math.sin(acosVal));
-        	this._bulletVec.y = (WeaponBulletVec.SHOTGUN_Y * Math.cos(acosVal)) + (WeaponBulletVec.SHOTGUN_X * Math.sin(acosVal));
-        }
+	        // update rotation to weapon
+	        this._weapon.setRotation(angle);
+	        // update the bullet vector from angle
+	        if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
+	        {
+	        	this._bulletVec.x = (WeaponBulletVec.MINIGUN_X * Math.cos(acosVal)) - (WeaponBulletVec.MINIGUN_Y * Math.sin(acosVal));
+	        	this._bulletVec.y = (WeaponBulletVec.MINIGUN_Y * Math.cos(acosVal)) + (WeaponBulletVec.MINIGUN_X * Math.sin(acosVal));
+	        }
+	        else if(this.currentWeapon == MainCharacterWeapon.SHOTGUN)
+	        {
+	        	this._bulletVec.x = (WeaponBulletVec.SHOTGUN_X * Math.cos(acosVal)) - (WeaponBulletVec.SHOTGUN_Y * Math.sin(acosVal));
+	        	this._bulletVec.y = (WeaponBulletVec.SHOTGUN_Y * Math.cos(acosVal)) + (WeaponBulletVec.SHOTGUN_X * Math.sin(acosVal));
+	        }
 
-        // update aiming vector
-        this._aimVec = vec;
+	        // update aiming vector
+	        this._aimVec = vec;
+	    }
 	},
 	shoot:function(parent) {
-		if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
+		if(this.currentState != MainCharacterStates.DIE_STATE)
 		{
-			// calculate a spawn pos
-			var spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x, this._weapon.getPositionY() + this._bulletVec.y);
-			var destPos = cc.p(spawnPos.x + this._aimVec.x*512, spawnPos.y + this._aimVec.y*448);
-
-			// spawn a bullet
-			var bullet = cc.Sprite.create(res_minigunBullet);
-			bullet.setPosition(spawnPos);
-			// move the bullet in the direction of the aimming vec
-			var moveTo = cc.MoveTo.create(1.0, destPos);
-			var action = cc.Sequence.create(
-				moveTo,
-				cc.CallFunc.create(this, this.removeBullet, bullet));
-			bullet.runAction(action);
-			this._bullets.push(bullet);
-			parent.addChild(bullet);
-		}
-		else if(this.currentWeapon == MainCharacterWeapon.SHOTGUN)
-		{
-			if(this._countingWeaponShotCoolDownTime == 0) // only check for 0 is enough
+			if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
 			{
-				this._isWeaponFirstShotOut = true;
-				// manually called countTime() first time
-				this.countTime(0.0000000000000001);
+				// calculate a spawn pos
+				var spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x, this._weapon.getPositionY() + this._bulletVec.y);
+				var destPos = cc.p(spawnPos.x + this._aimVec.x*512, spawnPos.y + this._aimVec.y*448);
 
-				for(var i=1; i<=5; i++)
+				// spawn a bullet
+				var bullet = cc.Sprite.create(res_minigunBullet);
+				bullet.setPosition(spawnPos);
+				// move the bullet in the direction of the aimming vec
+				var moveTo = cc.MoveTo.create(1.0, destPos);
+				var action = cc.Sequence.create(
+					moveTo,
+					cc.CallFunc.create(this, this.removeBullet, bullet));
+				bullet.runAction(action);
+				this._bullets.push(bullet);
+				parent.addChild(bullet);
+			}
+			else if(this.currentWeapon == MainCharacterWeapon.SHOTGUN)
+			{
+				if(this._countingWeaponShotCoolDownTime == 0) // only check for 0 is enough
 				{
-					// calculate a spawn pos
-					var bullRandomSpawnDir = 1.0;
-					if(Math.random() > 0.5)
-						bullRandomSpawnDir = -1.0;
+					this._isWeaponFirstShotOut = true;
+					// manually called countTime() first time
+					this.countTime(0.0000000000000001);
 
-					var spawnPos;
-					var destPos;
-
-					var absAimVec = cc.p(Math.abs(this._aimVec.x), Math.abs(this._aimVec.y));
-
-					if(absAimVec.x > 0.6)
+					for(var i=1; i<=5; i++)
 					{
-						spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x, this._weapon.getPositionY() + this._bulletVec.y + Math.random()*bullRandomSpawnDir*2);
-						destPos = cc.p(spawnPos.x + this._aimVec.x*512, spawnPos.y + this._aimVec.y*448 + Math.random()*bullRandomSpawnDir*20);
-					}
-					else if(absAimVec.y > 0.6)
-					{
-						spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x + Math.random()*bullRandomSpawnDir*2, this._weapon.getPositionY() + this._bulletVec.y);
-						destPos = cc.p(spawnPos.x + this._aimVec.x*512 + Math.random()*bullRandomSpawnDir*20, spawnPos.y + this._aimVec.y*448);
-					}
+						// calculate a spawn pos
+						var bullRandomSpawnDir = 1.0;
+						if(Math.random() > 0.5)
+							bullRandomSpawnDir = -1.0;
 
-					// spawn a bullet
-					var bullet = cc.Sprite.create(res_shotgunBullet);
-					bullet.setPosition(spawnPos);
-					// move the bullet in the direction of the aimming vec
-					var moveTo = cc.MoveTo.create(1.0, destPos);
-					var action = cc.Sequence.create(
-						moveTo,
-						cc.CallFunc.create(this, this.removeBullet, bullet));
-					bullet.runAction(action);
-					this._bullets.push(bullet);
-					parent.addChild(bullet);
+						var spawnPos;
+						var destPos;
+
+						var absAimVec = cc.p(Math.abs(this._aimVec.x), Math.abs(this._aimVec.y));
+
+						if(absAimVec.x > 0.6)
+						{
+							spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x, this._weapon.getPositionY() + this._bulletVec.y + Math.random()*bullRandomSpawnDir*2);
+							destPos = cc.p(spawnPos.x + this._aimVec.x*512, spawnPos.y + this._aimVec.y*448 + Math.random()*bullRandomSpawnDir*20);
+						}
+						else if(absAimVec.y > 0.6)
+						{
+							spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x + Math.random()*bullRandomSpawnDir*2, this._weapon.getPositionY() + this._bulletVec.y);
+							destPos = cc.p(spawnPos.x + this._aimVec.x*512 + Math.random()*bullRandomSpawnDir*20, spawnPos.y + this._aimVec.y*448);
+						}
+
+						// spawn a bullet
+						var bullet = cc.Sprite.create(res_shotgunBullet);
+						bullet.setPosition(spawnPos);
+						// move the bullet in the direction of the aimming vec
+						var moveTo = cc.MoveTo.create(1.0, destPos);
+						var action = cc.Sequence.create(
+							moveTo,
+							cc.CallFunc.create(this, this.removeBullet, bullet));
+						bullet.runAction(action);
+						this._bullets.push(bullet);
+						parent.addChild(bullet);
+					}
 				}
 			}
 		}
@@ -263,7 +281,7 @@ var MainCharacter = cc.Sprite.extend({
 		bullet.removeFromParentAndCleanup(true);
 	},
 	countTime:function(dt) {
-		if(this._isWeaponFirstShotOut)
+		if(this._isWeaponFirstShotOut && this.currentState != MainCharacterStates.DIE_STATE)
 		{
 			this._countingWeaponShotCoolDownTime += dt;
 
@@ -287,31 +305,65 @@ var MainCharacter = cc.Sprite.extend({
 		}
 	},
 	update:function(dt) {
-		// checking collision of bullets against the zombie
-		for(var i=0; i<this._bullets.length; i++)
+		if(this.currentState != MainCharacterStates.DIE_STATE)
 		{
-			var b = this._bullets[i];
-
-			for(var j=0; j<this.getParent().zombies.length; j++)
+			// checking collision of bullets against the zombie
+			for(var i=0; i<this._bullets.length; i++)
 			{
-				var z = this.getParent().zombies[j];
+				var b = this._bullets[i];
 
-				// hit once by the same bullet
-				if(z.currentState == ZombieStates.BEINGHIT_STATE)
-					continue;
-
-				if(z.getPositionX() + 16 >=0 &&
-					cc.Rect.CCRectIntersectsRect(
-					cc.rect(z.getPositionX(), z.getPositionY(), 32, 32),
-					cc.rect(b.getPositionX(), b.getPositionY(), b.getContentSize().width, b.getContentSize().height))
-					)
+				for(var j=0; j<this.getParent().zombies.length; j++)
 				{
-					z.hitByBullet(this.currentWeapon, this._aimVec);
+					var z = this.getParent().zombies[j];
 
-					break;
+					// hit once by the same bullet
+					if(z.currentState == ZombieStates.BEINGHIT_STATE)
+						continue;
+
+					if(z.getPositionX() + 16 >=0 &&
+						cc.Rect.CCRectIntersectsRect(
+						cc.rect(z.getPositionX(), z.getPositionY(), 32, 32),
+						cc.rect(b.getPositionX(), b.getPositionY(), b.getContentSize().width, b.getContentSize().height))
+						)
+					{
+						z.hitByBullet(this.currentWeapon, this._aimVec);
+
+						break;
+					}
 				}
 			}
 		}
+	},
+	hitByZombie:function(hit) {
+		if(this.currentState != MainCharacterStates.BEINGHIT_STATE &&
+			this.currentState != MainCharacterStates.DIE_STATE)
+		{
+			this.hp -= hit;
+
+			if(this.hp > 0)
+			{
+				// change to being hit state and play animation
+				this.playBeingHitAnimation();
+			}
+			else
+			{
+				// change to die state and play die animation
+				this.playDieAnimation();
+			}
+		}
+		else
+		{
+			this.hp -= hit;
+
+			// bound hp
+			if(this.hp < 0)
+				this.hp = 0;
+		}
+	},
+	// tell gameSessionScene that the game is over, then it will show game over UI
+	awakeGameOver:function() {
+		// tell it here
+		global.log("game over");
 	}
 });
 
