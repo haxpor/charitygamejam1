@@ -5,15 +5,16 @@ var SpawnRule = {
 	BASE_ZOMBIE_AMOUNT: 5,
 	BASE_DELTA_TIME: 30.0,	// in seconds
 
-	LIMIT_ZOMBIE_AMOUNT: 200
+	LIMIT_ZOMBIE_AMOUNT: 600
 }
 
 function ZombieSpawner () {
 	this._parent = null;	// gameSessionLayer object
-	this._countingTime = SpawnRule.BASE_DELTA_TIME;	// to make it immediately spawns at the first time
+	this._countingTime = SpawnRule.BASE_DELTA_TIME * (1.0+SpawnRule.PERCENT_DELTA_TIME_DECREASE_PER_WAVE);	// to make it immediately spawns at the first time
 
 	this._currentZombieAmount = SpawnRule.BASE_ZOMBIE_AMOUNT;
-	this._currentDeltaTime = SpawnRule.BASE_DELTA_TIME;
+	this._currentDeltaTime = SpawnRule.BASE_DELTA_TIME * (1.0+SpawnRule.PERCENT_DELTA_TIME_DECREASE_PER_WAVE);
+	this._currentWaveNo = 0;
 	
 	this.initWithParent = function(parent) {
 		this._parent = parent;
@@ -31,6 +32,8 @@ function ZombieSpawner () {
 			// calculate new active rules
 			this._currentZombieAmount += SpawnRule.ZOMBIE_AMOUNT_INCREASE_PER_WAVE;
 			this._currentDeltaTime *= (1.0 - SpawnRule.PERCENT_DELTA_TIME_DECREASE_PER_WAVE);
+			// update waveno
+			this._currentWaveNo++;
 
 			// reset time
 			this._countingTime = 0;
@@ -39,18 +42,29 @@ function ZombieSpawner () {
 	
 	// spawn patterns
 	this._spawnPattern1 = function () {
-		global.log("spawns pattern 1");
+		if(2*this._parent.zombies.length + SpawnRule.ZOMBIE_AMOUNT_INCREASE_PER_WAVE < SpawnRule.LIMIT_ZOMBIE_AMOUNT)
+		{
+			var winSize = cc.Director.getInstance().getWinSize();
 
-		var winSize = cc.Director.getInstance().getWinSize();
-
-		for(var i=0; i<this._currentZombieAmount; i++)
-        {
-            var zombie = Zombie.create(this._parent.getMainCharacter().getPosition());
-            zombie.setPosition(cc.p(-64, winSize.height - 64 - i*64));
-            this._parent.zombies.push(zombie);
-            this._parent.addChild(zombie);
-        }
+			for(var i=0; i<this._currentZombieAmount; i++)
+	        {
+	            var zombie = Zombie.create(this._parent.getMainCharacter().getPosition());
+	            zombie.setPosition(cc.p(-64, winSize.height - 64 - i*64));
+	            this._parent.zombies.push(zombie);
+	            this._parent.addChild(zombie);
+	        }
+	    }
 	};
+
+	// get the current time left
+	this.getCurrentTimeLeft = function () {
+		return this._currentDeltaTime - this._countingTime;
+	};
+
+	// get the current wave no
+	this.getCurrentWaveNo = function () {
+		return this._currentWaveNo;
+	}
 }
 
 ZombieSpawner.create = function(parent) {

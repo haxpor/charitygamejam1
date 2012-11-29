@@ -40,7 +40,8 @@
             'src/mainCharacter.js',
             'src/zombie.js',
             'src/mainMenuScene.js',
-            'src/zombieSpawner.js'
+            'src/zombieSpawner.js',
+            'src/hudLayer.js'
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {

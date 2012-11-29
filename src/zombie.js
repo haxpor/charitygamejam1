@@ -183,7 +183,7 @@ var Zombie = cc.Sprite.extend({
 		this.stopAllActions();
 
 		// also move the dead body to the left
-		var moveLeft = cc.MoveTo.create(2.0, cc.p(-64, this.getPositionY()));
+		var moveLeft = cc.MoveTo.create(2.0, cc.p(-128, this.getPositionY()));
 		this.runAction(moveLeft);
 
 		this.runAction(this._dieAnimAction);

@@ -21,6 +21,14 @@ var global = {
 			return soundId;
 		}
 	},
+	stopBackgroundMusic:function (releaseData) {
+		if(global.music == 1)
+			cc.AudioEngine.getInstance().stopBackgroundMusic(releaseData);
+	},
+	stopEffect:function (path) {
+		if(global.music == 1)
+			cc.AudioEngine.getInstance().stopEffect(path);
+	},
 
 	// Spritesheet & Frame related utilities function
 	loadSpriteFrames:function (plist) {

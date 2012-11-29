@@ -300,7 +300,8 @@ var MainCharacter = cc.Sprite.extend({
 				if(z.currentState == ZombieStates.BEINGHIT_STATE)
 					continue;
 
-				if(cc.Rect.CCRectIntersectsRect(
+				if(z.getPositionX() + 16 >=0 &&
+					cc.Rect.CCRectIntersectsRect(
 					cc.rect(z.getPositionX(), z.getPositionY(), 32, 32),
 					cc.rect(b.getPositionX(), b.getPositionY(), b.getContentSize().width, b.getContentSize().height))
 					)

@@ -34,6 +34,12 @@ var MainMenuLayer = cc.LayerColor.extend({
         // cycle through the available weapons
         if(e == cc.KEY.x)
         {
+        	// stop current playing bgm
+        	global.stopBackgroundMusic(true);
+
+        	// play stage theme
+        	global.playBackgroundMusic(res_stageThemeBGM, true);
+
             // transition to game session scene
             cc.Director.getInstance().replaceScene(new GameSessionScene());
         }
@@ -43,6 +49,10 @@ var MainMenuLayer = cc.LayerColor.extend({
 var MainMenuScene = cc.Scene.extend({
 	onEnter:function() {
 		this._super();
+
+		// play bgm
+        global.playBackgroundMusic(res_mainThemeBGM, true);
+
 		var layer = new MainMenuLayer();
 		layer.initWithColor(cc.c4b(0,0,0,0));
 		this.addChild(layer);

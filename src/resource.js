@@ -1,5 +1,5 @@
-var res_testSfx = "res/testSfx";
-var res_testMusic = "res/bgMusic";
+var res_mainThemeBGM = "res/MainTheme";
+var res_stageThemeBGM = "res/StageTheme";
 
 var res_minigunBullet = "res/minigunBullet.png";
 var res_shotgunBullet = "res/shotgunBullet.png";
@@ -44,8 +44,8 @@ var g_ressources = [
     //tmx
 
     //bgm
-    {type:"bgm", src: res_testMusic},
+    {type:"bgm", src: res_mainThemeBGM},
+    {type:"bgm", src: res_stageThemeBGM}
 
     //effect
-    {type:"effect", src: res_testSfx}
 ];

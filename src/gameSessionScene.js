@@ -14,11 +14,13 @@ var GameSessionLayer = cc.LayerColor.extend({
     zombies:null,
     _zSpawner:null,
 
+    _hudLayer:null,
+
     initWithColor:function (color) {
 
         if(!this._super(color))
         {
-            cc.log("GameSessionLayer's init() called error failed.");
+            global.log("GameSessionLayer's init() called failed.");
             return false;
         }
 
@@ -127,12 +129,17 @@ var GameSessionLayer = cc.LayerColor.extend({
         global.loadSpriteFrames(res_mainCharacterPlist);
         this._mc = MainCharacter.create();
         this._mc.setPosition(cc.p(winSize.width * 0.8, winSize.height/2 - 32));
+        this.reorderChild(this._mc, winSize.height - this._mc.getPositionY());
         this._mc.addSelfToNode(this);
         global.unloadSpriteFrames(res_mainCharacterPlist);
 
         // zombie spawner
         global.loadSpriteFrames(res_zombiePlist);   // <-- make sure it's called the last
         this._zSpawner = ZombieSpawner.create(this);
+
+        // hud layer
+        this._hudLayer = HudLayer.create(1, SpawnRule.BASE_DELTA_TIME, this._mc.hp);
+        this.addChild(this._hudLayer, 10);
 
         this.setTouchEnabled(true);
         this.setKeyboardEnabled(true);
@@ -208,6 +215,9 @@ var GameSessionLayer = cc.LayerColor.extend({
 
             this.reorderChild(z, height - z.getPositionY());
         }
+
+        // update hud information
+        this._hudLayer.updateWith(this._zSpawner.getCurrentWaveNo(), this._zSpawner.getCurrentTimeLeft(), this._mc.hp);
     },
     getMainCharacter:function () {
         return this._mc;
@@ -217,6 +227,7 @@ var GameSessionLayer = cc.LayerColor.extend({
 var GameSessionScene = cc.Scene.extend({
     onEnter:function () {
         this._super();
+
         var layer = new GameSessionLayer();
         layer.initWithColor(new cc.Color4B(0,0,0,0));
         this.addChild(layer);
