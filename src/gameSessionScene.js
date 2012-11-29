@@ -141,11 +141,30 @@ var GameSessionLayer = cc.LayerColor.extend({
         this._hudLayer = HudLayer.create(1, SpawnRule.BASE_DELTA_TIME, this._mc.hp);
         this.addChild(this._hudLayer, 10);
 
+        // one time hint to change weapon
+        if(global.showHint)
+        {
+            var keyHintLabel = cc.LabelTTF.create("- Press x to change weapon -", "AtariClassic", 15);
+            keyHintLabel.setColor(cc.c4b(255,255,255,255));
+            keyHintLabel.setPosition(cc.p(winSize.width/2, winSize.height/4.5));
+            var blink = cc.Blink.create(2.0, 5);
+            var fadeOut = cc.FadeOut.create(1.0);
+            var sequence = cc.Sequence.create(blink, fadeOut, cc.CallFunc.create(this, this._removeHintLabel, keyHintLabel));
+            keyHintLabel.runAction(sequence);
+            this.addChild(keyHintLabel, 9);
+
+            // show only one time
+            global.showHint = 0;
+        }
+
         this.setTouchEnabled(true);
         this.setKeyboardEnabled(true);
 
         this.scheduleUpdate();
         return true;
+    },
+    _removeHintLabel:function(label) {
+        this.removeChild(label);
     },
     onExit:function () {
         // unload the last call to load zombie's plist file

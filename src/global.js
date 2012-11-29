@@ -4,6 +4,7 @@ var global = {
 	debug:1,
 	music:1,
 	sfx:1,
+	showHint:1,
 
 	// Functions (mostly wrapper and utillities)
 	log:function (msg) {
