@@ -335,11 +335,15 @@ var MainCharacter = cc.Sprite.extend({
 		}
 	},
 	hitByZombie:function(hit) {
+		this.hp -= hit;
+		// bound hp
+		if(this.hp < 0)
+			this.hp = 0;
+
+
 		if(this.currentState != MainCharacterStates.BEINGHIT_STATE &&
 			this.currentState != MainCharacterStates.DIE_STATE)
 		{
-			this.hp -= hit;
-
 			if(this.hp > 0)
 			{
 				// change to being hit state and play animation
@@ -351,19 +355,11 @@ var MainCharacter = cc.Sprite.extend({
 				this.playDieAnimation();
 			}
 		}
-		else
-		{
-			this.hp -= hit;
-
-			// bound hp
-			if(this.hp < 0)
-				this.hp = 0;
-		}
 	},
 	// tell gameSessionScene that the game is over, then it will show game over UI
 	awakeGameOver:function() {
 		// tell it here
-		global.log("game over");
+		this.getParent().showGameOverUI();
 	}
 });
 

@@ -41,7 +41,8 @@
             'src/zombie.js',
             'src/mainMenuScene.js',
             'src/zombieSpawner.js',
-            'src/hudLayer.js'
+            'src/hudLayer.js',
+            'src/dieUILayer.js'
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {

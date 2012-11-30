@@ -30,7 +30,10 @@ var global = {
 		if(global.music == 1)
 			cc.AudioEngine.getInstance().stopEffect(path);
 	},
-
+	rewindBackgroundMusic:function () {
+		if(global.music == 1)
+			cc.AudioEngine.getInstance().rewindBackgroundMusic();
+	},
 	// Spritesheet & Frame related utilities function
 	loadSpriteFrames:function (plist) {
 		cc.SpriteFrameCache.getInstance().addSpriteFrames(plist);

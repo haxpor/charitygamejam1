@@ -313,6 +313,9 @@ var Zombie = cc.Sprite.extend({
 			// play animation
 			this.playDieAnimation();
 
+			// increase number of zombies killed
+			this.getParent().zombiesKilled++;
+
 			this.nextState = ZombieStates.DIE_WAITING_STATE;
 		}
 		else if(this.currentState == ZombieStates.DIE_WAITING_STATE)

@@ -1,5 +1,8 @@
 var GameSessionLayer = cc.LayerColor.extend({
     isMouseDown:false,
+    isGameOver:false,
+    zombiesKilled: 0,
+
     _mc:null,
     _ground1:null,
     _ground2:null,
@@ -167,6 +170,8 @@ var GameSessionLayer = cc.LayerColor.extend({
         this.removeChild(label);
     },
     onExit:function () {
+        this._super();
+
         // unload the last call to load zombie's plist file
         global.unloadSpriteFrames(res_zombiePlist);
     },
@@ -179,22 +184,28 @@ var GameSessionLayer = cc.LayerColor.extend({
     onTouchesBegan:function (touches, event) {
         this.isMouseDown = true;
 
-        // update the rotation of weapon
-        if(touches)
-            this._mc.updateWeaponRotationFrom(touches[0].getLocation());
-
-        // shoot
-        this._mc.shoot(this);
-    },
-    onTouchesMoved:function (touches, event) {
-        // update the rotation of weapon
-        if(touches)
-            this._mc.updateWeaponRotationFrom(touches[0].getLocation());
-
-        if(this.isMouseDown)
+        if(!this.isGameOver)
         {
+            // update the rotation of weapon
+            if(touches)
+                this._mc.updateWeaponRotationFrom(touches[0].getLocation());
+
             // shoot
             this._mc.shoot(this);
+        }
+    },
+    onTouchesMoved:function (touches, event) {
+        if(!this.isGameOver)
+        {
+            // update the rotation of weapon
+            if(touches)
+                this._mc.updateWeaponRotationFrom(touches[0].getLocation());
+
+            if(this.isMouseDown)
+            {
+                // shoot
+                this._mc.shoot(this);
+            }
         }
     },
     onTouchesEnded:function (touches, event) {
@@ -207,39 +218,78 @@ var GameSessionLayer = cc.LayerColor.extend({
 
     },
     onKeyDown:function(e) {
-        // cycle through the available weapons
-        if(e == cc.KEY.x)
+        if(!this.isGameOver)
         {
-            // cycle through weapon
-            if(this._mc.currentWeapon == MainCharacterWeapon.MINIGUN)
+            // cycle through the available weapons
+            if(e == cc.KEY.x)
             {
-                this._mc.changeWeaponTo(MainCharacterWeapon.SHOTGUN);
-            }
-            else if(this._mc.currentWeapon == MainCharacterWeapon.SHOTGUN)
-            {
-                this._mc.changeWeaponTo(MainCharacterWeapon.MINIGUN);
+                // cycle through weapon
+                if(this._mc.currentWeapon == MainCharacterWeapon.MINIGUN)
+                {
+                    this._mc.changeWeaponTo(MainCharacterWeapon.SHOTGUN);
+                }
+                else if(this._mc.currentWeapon == MainCharacterWeapon.SHOTGUN)
+                {
+                    this._mc.changeWeaponTo(MainCharacterWeapon.MINIGUN);
+                }
             }
         }
     },
     update:function(dt) {
         // update spawner
-        this._zSpawner.update(dt);
+        if(!this.isGameOver)
+            this._zSpawner.update(dt);
 
         // update reorder of child
         var height = cc.Director.getInstance().getWinSize().height;
-
         for(var i=0; i<this.zombies.length; i++)
         {
             var z = this.zombies[i];
-
             this.reorderChild(z, height - z.getPositionY());
         }
 
         // update hud information
-        this._hudLayer.updateWith(this._zSpawner.getCurrentWaveNo(), this._zSpawner.getCurrentTimeLeft(), this._mc.hp);
+        if(!this.isGameOver)
+            this._hudLayer.updateWith(this._zSpawner.getCurrentWaveNo(), this._zSpawner.getCurrentTimeLeft(), this._mc.hp);
     },
     getMainCharacter:function () {
         return this._mc;
+    },
+    showGameOverUI:function () {
+        this.isGameOver = true;
+
+        // add more here ...
+        var dieUI = DieUILayer.create(this._zSpawner.getCurrentWaveNo(), this.zombiesKilled);
+        this.addChild(dieUI, 10);
+    },
+    restartGame:function() {
+        this.removeAllChildrenWithCleanup(true);
+        this.unscheduleUpdate();
+
+        this.isGameOver = false;
+        this.zombiesKilled = 0;
+        this._mc = null;
+        this._ground1 = null;
+        this._ground2 = null;
+        this._sky = null;
+        this._building1 = null;
+        this._building2 = null;
+        this._cloudFront1 = null;
+        this._cloudFront2 = null;
+        this._cloudBehind1 = null;
+        this._cloudBehind2 = null;
+        this.zombies = null;
+        this._zSpawner = null;
+        this._hudLayer = null;
+
+        // unload the last call to load zombie's plist file
+        global.unloadSpriteFrames(res_zombiePlist);
+
+        // re-init the game
+        this.initWithColor(cc.c4b(0,0,0,0));
+
+        // rewind background music
+        global.rewindBackgroundMusic();
     }
 });
 
@@ -248,7 +298,7 @@ var GameSessionScene = cc.Scene.extend({
         this._super();
 
         var layer = new GameSessionLayer();
-        layer.initWithColor(new cc.Color4B(0,0,0,0));
+        layer.initWithColor(cc.c4b(0,0,0,0));
         this.addChild(layer);
     }
 });
