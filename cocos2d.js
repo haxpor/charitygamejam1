@@ -43,7 +43,7 @@
             'src/zombieSpawner.js',
             'src/hudLayer.js',
             'src/dieUILayer.js',
-            'src/creditScene.js',
+            'src/creditsScene.js',
             'src/splashScreenScene.js'
         ]
     };

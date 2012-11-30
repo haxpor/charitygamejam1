@@ -1,4 +1,5 @@
 var res_splashLogo = "res/logo.png";
+var res_creditsLogo = "res/logo-bw.png";
 
 var res_mainThemeBGM = "res/MainTheme";
 var res_stageThemeBGM = "res/StageTheme";
@@ -24,6 +25,7 @@ var res_gameLogo = "res/cld1_logo.png";
 var g_ressources = [
     //image
     {type:"image", src: res_splashLogo},
+    {type:"image", src: res_creditsLogo},
     {type:"image", src: res_minigunBullet},
     {type:"image", src: res_shotgunBullet},
 

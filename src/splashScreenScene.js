@@ -10,10 +10,15 @@ var SplashScreenLayer = cc.LayerColor.extend({
 
 		var logo = cc.Sprite.create(res_splashLogo);
 		logo.setPosition(cc.p(winSize.width/2 + 5, winSize.height/2));
-		logo.runAction(cc.Sequence.create(
+		this.addChild(logo);
+
+		var label = cc.LabelTTF.create("Indie Game Studio", "AtariClassic", 16);
+		label.setPosition(cc.p(winSize.width/2 - label.getContentSize().width/2, winSize.height/4.5));
+		this.addChild(label);
+
+		this.runAction(cc.Sequence.create(
 			cc.DelayTime.create(3.0),
 			cc.CallFunc.create(this, this._transitionToMainMenuScene)));
-		this.addChild(logo);
 
 		return true;
 	},
