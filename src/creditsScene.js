@@ -114,6 +114,7 @@ var CreditsLayer = cc.LayerColor.extend({
 		this.addChild(this._basementDojoEmailLabel);
 
 		this.setTouchEnabled(true);
+		this.setKeyboardEnabled(true);
 		this.scheduleUpdate();
 
 		return true;
@@ -148,6 +149,19 @@ var CreditsLayer = cc.LayerColor.extend({
 	},
 	onTouchesCancelled:function (touches, event) {
 		this.isMouseDown = false;
+	},
+	onKeyUp:function(e) {
+
+	},
+	onKeyDown:function(e) {
+		if(e == cc.KEY.x || e == cc.KEY.enter || e == cc.KEY.space)
+		{
+			// unschedule udpate
+			this.unscheduleUpdate();
+
+			// go back to main menu scene
+			cc.Director.getInstance().replaceScene(cc.TransitionFade.create(1.0, new MainMenuScene()));
+		}
 	}
 });
 

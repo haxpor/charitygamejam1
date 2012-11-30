@@ -34,6 +34,10 @@ var global = {
 		if(global.music == 1)
 			cc.AudioEngine.getInstance().rewindBackgroundMusic();
 	},
+	isBackgroundMusicPlaying:function () {
+		if(global.music == 1)
+			return cc.AudioEngine.getInstance().isBackgroundMusicPlaying();
+	},
 	// Spritesheet & Frame related utilities function
 	loadSpriteFrames:function (plist) {
 		cc.SpriteFrameCache.getInstance().addSpriteFrames(plist);

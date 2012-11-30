@@ -118,8 +118,9 @@ var MainMenuScene = cc.Scene.extend({
 	onEnter:function() {
 		this._super();
 
-		// play bgm
-        global.playBackgroundMusic(res_mainThemeBGM, true);
+		// play bgm (if not play)
+		if(!global.isBackgroundMusicPlaying())
+        	global.playBackgroundMusic(res_mainThemeBGM, true);
 
 		var layer = new MainMenuLayer();
 		layer.initWithColor(cc.c4b(0,0,0,0));
