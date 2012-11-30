@@ -42,7 +42,9 @@
             'src/mainMenuScene.js',
             'src/zombieSpawner.js',
             'src/hudLayer.js',
-            'src/dieUILayer.js'
+            'src/dieUILayer.js',
+            'src/creditScene.js',
+            'src/splashScreenScene.js'
         ]
     };
     window.addEventListener('DOMContentLoaded', function () {

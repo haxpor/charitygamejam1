@@ -52,7 +52,6 @@ var DieUILayer = cc.LayerColor.extend({
 			);
 		this.addChild(zombiesKilledLabel);
 
-		// menu
 		var restartGameLabel = cc.LabelTTF.create("Press x to restart", "AtariClassic", 20);
 		restartGameLabel.setColor(cc.c3b(255,255,255));
 		restartGameLabel.setPosition(

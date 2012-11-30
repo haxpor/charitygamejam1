@@ -224,6 +224,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         }
     },
     onTouchesCancelled:function (touch, event) {
+        this.isMouseDown = false;
     },
 
     onKeyUp:function(e) {
@@ -233,7 +234,7 @@ var GameSessionLayer = cc.LayerColor.extend({
         if(!this.isGameOver)
         {
             // cycle through the available weapons
-            if(e == cc.KEY.x)
+            if(e == cc.KEY.x && !this.isMouseDown)
             {
                 // cycle through weapon
                 if(this._mc.currentWeapon == MainCharacterWeapon.MINIGUN)

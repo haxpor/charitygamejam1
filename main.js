@@ -56,9 +56,9 @@ var cocos2dApp = cc.Application.extend({
         // create a scene. it's an autorelease object
 
         // run
-        director.runWithScene(new this.startScene());
+        director.runWithScene(cc.TransitionFade.create(1.0, new this.startScene()));
 
         return true;
     }
 });
-var myApp = new cocos2dApp(MainMenuScene);
+var myApp = new cocos2dApp(SplashScreenScene);
