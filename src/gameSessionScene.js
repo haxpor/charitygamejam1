@@ -190,6 +190,9 @@ var GameSessionLayer = cc.LayerColor.extend({
             if(touches)
                 this._mc.updateWeaponRotationFrom(touches[0].getLocation());
 
+            // unschedule reducing heat point of mc's minigun
+            this.unschedule(this._reduceMcMinigunHeat);
+
             // shoot
             this._mc.shoot(this);
         }
@@ -210,6 +213,15 @@ var GameSessionLayer = cc.LayerColor.extend({
     },
     onTouchesEnded:function (touches, event) {
         this.isMouseDown = false;
+
+        if(!this.isGameOver)
+        {
+            // reduce minigun heat (try to reduce 50 heat-points per sec)
+            if(this._mc.countingMinigunHeat > 0)
+            {
+                this.schedule(this._reduceMcMinigunHeat, 1/50.0);
+            }
+        }
     },
     onTouchesCancelled:function (touch, event) {
     },
@@ -290,6 +302,15 @@ var GameSessionLayer = cc.LayerColor.extend({
 
         // rewind background music
         global.rewindBackgroundMusic();
+    },
+    _reduceMcMinigunHeat:function(dt) {
+        this._mc.countingMinigunHeat--;
+        this._mc.updateMinigunWeaponHeatVisual();   // internal check if it's minigun or not
+
+        if(this._mc.countingMinigunHeat <= 0)
+        {
+            this._mc.overheatCompleteCooledDown();
+        }
     }
 });
 

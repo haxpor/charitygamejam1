@@ -11,8 +11,8 @@ var MainCharacterWeapon = {
 }
 
 var WeaponCoolDownTime = {
-	MINIGUN: 0.0, // no cool down time
-	SHOTGUN: 1.20
+	MINIGUN: 0.0, // no cool down time (<- ust for clarity but not use this value)
+	SHOTGUN: 1.0
 }
 
 var WeaponBulletVec = {
@@ -20,6 +20,10 @@ var WeaponBulletVec = {
 	MINIGUN_Y: -7,
 	SHOTGUN_X: -12,
 	SHOTGUN_Y: 1
+}
+
+var WeaponRule = {
+	MINIGUN_OVERHEAT_THRESHOLD: 100	// must be conform to 50 points heat reduced per sec in gameSessionScene class
 }
 
 var MainCharacter = cc.Sprite.extend({
@@ -34,12 +38,14 @@ var MainCharacter = cc.Sprite.extend({
 	_bulletVec:null,
 	_isWeaponFirstShotOut: false,
 	_countingWeaponShotCoolDownTime:0,
+	_isMinigunDuringPanelty: false,
 	_bullets:null,
 
 	// attributes
 	hp:100,
 	currentState: -1,
 	currentWeapon: -1,
+	countingMinigunHeat:0,
 
 	initWithSpriteFrame:function(frame) {
 		// call super's init() function first
@@ -211,21 +217,37 @@ var MainCharacter = cc.Sprite.extend({
 		{
 			if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
 			{
-				// calculate a spawn pos
-				var spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x, this._weapon.getPositionY() + this._bulletVec.y);
-				var destPos = cc.p(spawnPos.x + this._aimVec.x*512, spawnPos.y + this._aimVec.y*448);
+				// if not yet overheat
+				if(this.countingMinigunHeat < WeaponRule.MINIGUN_OVERHEAT_THRESHOLD && !this._isMinigunDuringPanelty)
+				{
+					// increase heat to minigun
+					this.countingMinigunHeat++;
 
-				// spawn a bullet
-				var bullet = cc.Sprite.create(res_minigunBullet);
-				bullet.setPosition(spawnPos);
-				// move the bullet in the direction of the aimming vec
-				var moveTo = cc.MoveTo.create(1.0, destPos);
-				var action = cc.Sequence.create(
-					moveTo,
-					cc.CallFunc.create(this, this.removeBullet, bullet));
-				bullet.runAction(action);
-				this._bullets.push(bullet);
-				parent.addChild(bullet);
+					// calculate a spawn pos
+					var spawnPos = cc.p(this._weapon.getPositionX() + this._bulletVec.x, this._weapon.getPositionY() + this._bulletVec.y);
+					var destPos = cc.p(spawnPos.x + this._aimVec.x*512, spawnPos.y + this._aimVec.y*448);
+
+					// spawn a bullet
+					var bullet = cc.Sprite.create(res_minigunBullet);
+					bullet.setPosition(spawnPos);
+					// move the bullet in the direction of the aimming vec
+					var moveTo = cc.MoveTo.create(1.0, destPos);
+					var action = cc.Sequence.create(
+						moveTo,
+						cc.CallFunc.create(this, this.removeBullet, bullet));
+					bullet.runAction(action);
+					this._bullets.push(bullet);
+					parent.addChild(bullet);
+
+					// update show heat visual
+					this.updateMinigunWeaponHeatVisual();
+
+					// check if it's exceed panelty threshold
+					if(this.countingMinigunHeat >= WeaponRule.MINIGUN_OVERHEAT_THRESHOLD)
+					{
+						this._isMinigunDuringPanelty = true;
+					}
+				}
 			}
 			else if(this.currentWeapon == MainCharacterWeapon.SHOTGUN)
 			{
@@ -360,6 +382,24 @@ var MainCharacter = cc.Sprite.extend({
 	awakeGameOver:function() {
 		// tell it here
 		this.getParent().showGameOverUI();
+	},
+	updateMinigunWeaponHeatVisual:function () {
+		if(this.currentWeapon == MainCharacterWeapon.MINIGUN)
+		{
+			// show heat visual
+			this._weapon.setColor(cc.c3b(255, 255 - 255 * this.countingMinigunHeat / WeaponRule.MINIGUN_OVERHEAT_THRESHOLD, 255 - 255 * this.countingMinigunHeat / WeaponRule.MINIGUN_OVERHEAT_THRESHOLD));
+		}
+		else
+		{
+			this._weapon.setColor(cc.c3b(255,255,255));
+		}
+	},
+	overheatCompleteCooledDown:function () {
+		if(this._isMinigunDuringPanelty)
+		{
+			this._isMinigunDuringPanelty = false;
+			this.countingMinigunHeat = 0;
+		}
 	}
 });
 
