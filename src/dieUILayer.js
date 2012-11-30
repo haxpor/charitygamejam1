@@ -43,7 +43,7 @@ var DieUILayer = cc.LayerColor.extend({
 			);
 		this.addChild(waveLabel);
 
-		var zombiesKilledLabel = cc.LabelTTF.create("Z-Killed: " + this._zombiesKilled, "AtariClassic", 18);
+		var zombiesKilledLabel = cc.LabelTTF.create("Z-Kills: " + this._zombiesKilled, "AtariClassic", 18);
 		zombiesKilledLabel.setColor(cc.c3b(255,255,255));
 		zombiesKilledLabel.setPosition(
 			cc.p(
@@ -53,7 +53,7 @@ var DieUILayer = cc.LayerColor.extend({
 		this.addChild(zombiesKilledLabel);
 
 		// menu
-		var restartGameLabel = cc.LabelTTF.create("Press X to restart", "AtariClassic", 20);
+		var restartGameLabel = cc.LabelTTF.create("Press x to restart", "AtariClassic", 20);
 		restartGameLabel.setColor(cc.c3b(255,255,255));
 		restartGameLabel.setPosition(
 			cc.p(
