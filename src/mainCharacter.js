@@ -41,6 +41,9 @@ var MainCharacter = cc.Sprite.extend({
 	_isMinigunDuringPanelty: false,
 	_bullets:null,
 
+	_weaponMinigunFrameAnimAction:null,
+	_weaponShotgunFrameAnimAction:null,
+
 	// attributes
 	hp:100,
 	currentState: -1,
@@ -101,8 +104,21 @@ var MainCharacter = cc.Sprite.extend({
 			cc.CallFunc.create(this, this.awakeGameOver));
 
 		// ## WEAPON ##
+		frames.length = 0;
+		frames.push(cc.SpriteFrame.create(res_weapons, cc.rect(0,0,32,32), false, cc.p(0,0), cc.Size(32,32)));
+		this._weaponMinigunFrameAnimAction = cc.Animate.create(
+			cc.Animation.create(
+				frames, 1/25.0
+			));
+
+		frames.length = 0;
+		frames.push(cc.SpriteFrame.create(res_weapons, cc.rect(0,32,32,32), false, cc.p(0,0), cc.Size(32,32)));
+		this._weaponShotgunFrameAnimAction = cc.Animate.create(
+			cc.Animation.create(
+				frames, 1/25.0
+			));
+
 		this._weapon = cc.Sprite.create(res_weapons, cc.rect(0, 0, 32, 32));
-		//this._weapon.setAnchorPoint(cc.p(1.0, 0.5));
 
 		// run default animation
 		this.playWalkAnimation();
@@ -161,12 +177,12 @@ var MainCharacter = cc.Sprite.extend({
 		if(no == MainCharacterWeapon.MINIGUN)
 		{
 			this.currentWeapon = MainCharacterWeapon.MINIGUN;
-			this._weapon.setTextureRect(cc.rect(0, 0, 32, 32));
+			this._weapon.runAction(this._weaponMinigunFrameAnimAction);
 		}
 		else if(no == MainCharacterWeapon.SHOTGUN)
 		{
 			this.currentWeapon = MainCharacterWeapon.SHOTGUN;
-			this._weapon.setTextureRect(cc.rect(0, 32, 32, 32));
+			this._weapon.runAction(this._weaponShotgunFrameAnimAction);
 		}
 	},
 	removeWeapon:function() {
