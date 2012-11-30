@@ -49,7 +49,7 @@ function ZombieSpawner () {
 			for(var i=0; i<this._currentZombieAmount; i++)
 	        {
 	            var zombie = Zombie.create(this._parent.getMainCharacter().getPosition());
-	            zombie.setPosition(cc.p(-64, winSize.height - 64 - i*64));
+	            zombie.setPosition(cc.p(-64, gmath.randomBetween(0, winSize.height-64)));
 	            this._parent.zombies.push(zombie);
 	            this._parent.addChild(zombie);
 	        }
