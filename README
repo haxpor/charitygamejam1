@@ -1,10 +1,43 @@
-A charity game jam project for LD48 hosted by @McPunkypants.
+CLD1
 
-I don't decide on the game name just yet.
+A game made for charity game jam project or MiniLD#38 as part of Ludumare event hosted by @McFunkypants.
+
+I made this game with another artist and freelance sound maker, and be able to complete the whole project within 5 days. You know the event has no restriction on deadline, just make a game and submit. It serves the purpose.
+
+Not every single bit of code is optimized so please use it for educational purpose and build up on that :)
+
+I use cocos2d-html5-v.2.0.0 @ Aug.28, 2012. See it at http://cocos2d-x.org/projects/cocos2d-x/wiki/Download. Please note that I use both cocos2d-x and cocos2d-html5 from the day 1 of their own development process by the team making it. So that's legit story about it.
+
+The project utilize the following features.
+- Manual implementation of parallax objects
+- Actions (notable are Sequence, DelayTime, MoveTo, MoveBy, and CallFunc)
+- Making complex (sort of) animation to works
+- schedule + scheduleUpdate
+- LabelTTF with custom .ttf file
+- Keyboard event
+- Scrolling credits style
+- Mainmenu selection in retro (or NES) style
+- Manipulate vector for aiming, shooting, and placing bullets for guns
+- Collision detection of bullets against zombies
+- Simulate moving scene
+- Zombie spawning system
 
 -- Code Guideline --
 1. Prefix variables/functions with "_" to indicate that it's private members.
 2. Non-prefix variables/functions means public members.
-3. All basic initilization of values will be done in init...() function, not to pay attention too much on the single line declaration.
+3. All basic initilization of values will be done in init...() function, not to pay attention too much on the single line declaration within the class.
 
-Wasin
+I'm open and accept all kind of comments or suggestion, or if you want to connect with me, just follow my twitter or send me e-mail.
+
+*Art resource is copyrighted by Basement Dojo (my company), you may not use any copyrighted material without permission.
+*Sound resource is freely to be used. But please credit "Narupai Asksonmee" for his creation. You can found him on soundcloud.com/user8503397.
+
+** If you guys succeed to make any game that based on this project, please let me know in any way. I would love to see it and share the projects to my connection on social network :)
+
+LICENSE: I don't use any license on this project, I don't get used to reading all those license stuff, literally. If you use my code with your project, for the whole or any part, **just credit my name in your work, that's all I need".
+
+Happy hacking!
+
+Wasin Thonkaew (Indie Game Developer)
+E-mail: haxpor@gmail.com
+Twitter: @haxpor
